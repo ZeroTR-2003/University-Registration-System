@@ -118,7 +118,7 @@ class TestingConfig(Config):
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=5)
     
     # Rate limiter storage to avoid Redis in tests
-    RATELIMIT_STORAGE_URL = 'memory://'
+    RATELIMIT_STORAGE_URI = 'memory://'
     RATELIMIT_DEFAULT = "1000 per minute"
 
 
