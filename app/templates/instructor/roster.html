@@ -122,17 +122,22 @@
                 
                 <!-- Status -->
                 <td class="px-6 py-4">
-                  {% if enrollment.status.value == 'enrolled' %}
-                    <span class="px-2 py-1 bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 rounded text-xs font-semibold">
-                      Enrolled
+                  {% set derived = enrollment.derived_status_label %}
+                  {% if derived.startswith('In Progress') %}
+                    <span class="px-2 py-1 bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300 rounded text-xs font-semibold">
+                      In Progress
                     </span>
-                  {% elif enrollment.status.value == 'completed' %}
+                  {% elif derived.startswith('Completed') %}
                     <span class="px-2 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 rounded text-xs font-semibold">
-                      Completed
+                      {{ derived }}
+                    </span>
+                  {% elif derived == 'Failed' %}
+                    <span class="px-2 py-1 bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300 rounded text-xs font-semibold">
+                      Failed
                     </span>
                   {% else %}
                     <span class="px-2 py-1 bg-gray-100 text-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded text-xs font-semibold">
-                      {{ enrollment.status.value|title }}
+                      {{ derived }}
                     </span>
                   {% endif %}
                 </td>
@@ -143,11 +148,16 @@
                     <span class="px-3 py-1 bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300 rounded-lg font-bold text-lg">
                       {{ enrollment.grade }}
                     </span>
+                    {% if enrollment.derived_status_label == 'Failed' %}
+                      <span class="ml-2" title="Failed">❌</span>
+                    {% elif enrollment.derived_status_label.startswith('Completed') %}
+                      <span class="ml-2" title="Passed">✅</span>
+                    {% endif %}
                     {% if enrollment.grade_points %}
                       <span class="text-xs text-gray-500 ml-2">({{ enrollment.grade_points }})</span>
                     {% endif %}
                   {% else %}
-                    <span class="text-gray-400 italic">Not graded</span>
+                    <span class="text-gray-400 italic">Unavailable</span>
                   {% endif %}
                 </td>
                 

@@ -117,11 +117,11 @@
               {% set already_enrolled = enrolled_sections|selectattr('course_section_id', 'equalto', section.id)|list %}
               {% if already_enrolled %}
                 {% set enrollment = already_enrolled[0] %}
-                {% if enrollment.status.value == 'enrolled' %}
+                {% if enrollment.status == 'Enrolled' %}
                   <span class="inline-block px-4 py-2 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 rounded-lg">
                     <i class="fas fa-check-circle mr-2"></i>Already Enrolled
                   </span>
-                {% elif enrollment.status.value == 'waitlisted' %}
+                {% elif enrollment.status == 'Waitlisted' %}
                   <span class="inline-block px-4 py-2 bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300 rounded-lg">
                     <i class="fas fa-clock mr-2"></i>On Waitlist (Position: {{ enrollment.waitlist_position }})
                   </span>

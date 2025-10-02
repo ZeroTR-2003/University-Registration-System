@@ -184,16 +184,70 @@ def schedule():
 
 @main_bp.route('/announcements')
 def announcements():
-    """View all announcements plus a notifications inbox for the current user."""
+    """Announcements filtered by role and course context plus a notifications inbox."""
     page = request.args.get('page', 1, type=int)
 
-    announcements = Announcement.query.order_by(
-        Announcement.created_at.desc()
-    ).paginate(
-        page=page,
-        per_page=10,
-        error_out=False
-    )
+    base_q = Announcement.query.order_by(Announcement.published_at.desc())
+    all_anns = base_q.all()
+
+    filtered = []
+    try:
+        if current_user.is_authenticated and current_user.is_admin():
+            # Admins can see everything
+            filtered = all_anns
+        elif current_user.is_authenticated and current_user.is_instructor():
+            # Instructors: role-targeted or global, plus announcements for their sections
+            instr = current_user.instructor_profile
+            section_ids = [s.id for s in instr.course_sections] if instr else []
+            for a in all_anns:
+                roles = (a.target_roles or ['All'])
+                roles_norm = [r.lower() for r in roles]
+                if ('all' in roles_norm) or ('instructor' in roles_norm) or (a.course_section_id and a.course_section_id in section_ids):
+                    filtered.append(a)
+        elif current_user.is_authenticated and current_user.is_student():
+            # Students: role-targeted or global, plus announcements for enrolled sections
+            student = current_user.student_profile
+            from app.models.enrollment import Enrollment
+            enrolled_section_ids = [e.course_section_id for e in Enrollment.query.filter_by(student_id=student.id).filter(Enrollment.status.in_(['Enrolled', 'Waitlisted', 'Completed'])).all()] if student else []
+            for a in all_anns:
+                roles = (a.target_roles or ['All'])
+                roles_norm = [r.lower() for r in roles]
+                if ('all' in roles_norm) or ('student' in roles_norm) or (a.course_section_id and a.course_section_id in enrolled_section_ids):
+                    filtered.append(a)
+        else:
+            # Anonymous users: only globals
+            for a in all_anns:
+                roles = (a.target_roles or ['All'])
+                roles_norm = [r.lower() for r in roles]
+                if 'all' in roles_norm:
+                    filtered.append(a)
+    except Exception:
+        filtered = all_anns
+
+    # Paginate the filtered list manually
+    per_page = 10
+    total = len(filtered)
+    start = (page - 1) * per_page
+    end = start + per_page
+    page_items = filtered[start:end]
+
+    class _Pagination:
+        def __init__(self, items, page, per_page, total):
+            self.items = items
+            self.page = page
+            self.per_page = per_page
+            self.total = total
+            self.pages = (total + per_page - 1) // per_page
+        
+        @property
+        def has_next(self):
+            return self.page < self.pages
+        
+        @property
+        def has_prev(self):
+            return self.page > 1
+
+    announcements = _Pagination(page_items, page, per_page, total)
 
     # Recent notifications for the current user (if logged in)
     notifications = []

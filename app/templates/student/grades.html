@@ -117,7 +117,7 @@
                             </td>
                             <td class="px-6 py-4 text-center">
                                 {% if e.grade %}
-                                    <div class="inline-flex flex-col items-center">
+                                    <div class="inline-flex items-center gap-2">
                                         <span class="text-3xl font-bold 
                                             {% if e.grade in ['A+', 'A'] %}text-green-600
                                             {% elif e.grade == 'A-' %}text-green-500
@@ -130,6 +130,11 @@
                                             {% else %}text-gray-600{% endif %}">
                                             {{ e.grade }}
                                         </span>
+                                        {% if e.derived_status_label == 'Failed' %}
+                                          <span title="Failed">❌</span>
+                                        {% elif e.derived_status_label.startswith('Completed') %}
+                                          <span title="Passed">✅</span>
+                                        {% endif %}
                                     </div>
                                 {% else %}
                                     <span class="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded text-sm font-medium">Unavailable</span>

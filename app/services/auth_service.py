@@ -30,8 +30,13 @@ def register_user(email: str, password: str, first_name: str, last_name: str, ro
 
     # Create profile automatically based on role
     if role_name == Role.STUDENT:
-        # Use user.id to guarantee uniqueness for student_number
-        student_number = f"S{datetime.now().year}{user.id:05d}"
+        # Generate per-year student number (YYYY<N>); do not overwrite existing formats
+        try:
+            from app.services.identifiers import generate_student_number
+            student_number = generate_student_number()
+        except Exception:
+            # Fallback to legacy format if generator fails
+            student_number = f"S{datetime.now().year}{user.id:05d}"
         prof = StudentProfile(user_id=user.id, student_number=student_number, enrollment_year=datetime.now().year, academic_status='Active')
         db.session.add(prof)
     elif role_name == Role.INSTRUCTOR:

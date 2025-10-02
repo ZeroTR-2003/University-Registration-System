@@ -42,8 +42,18 @@ class GradeService:
         """
         messages = []
         
-        # Validate grade value
-        if grade not in GradeService.VALID_GRADES:
+        # Validate grade value (allow numeric percentage as well)
+        is_numeric = False
+        g = grade.strip() if isinstance(grade, str) else grade
+        if isinstance(g, (int, float)):
+            is_numeric = True
+        elif isinstance(g, str):
+            try:
+                float(g.replace('%', '').strip())
+                is_numeric = True
+            except Exception:
+                is_numeric = False
+        if not is_numeric and grade not in GradeService.VALID_GRADES:
             messages.append(f"Invalid grade: {grade}")
             return False, messages
         
@@ -70,11 +80,18 @@ class GradeService:
         try:
             from app.models.notification import Notification
             if enrollment.student and enrollment.student.user:
+                # Include pass/fail in message if determinable
+                outcome = None
+                try:
+                    outcome = 'Passed' if enrollment.passed else ('Failed' if enrollment.derived_status_label == 'Failed' else None)
+                except Exception:
+                    outcome = None
+                outcome_text = f" ({outcome})" if outcome else ""
                 notification = Notification(
                     user_id=enrollment.student.user_id,
                     notification_type='grade',
                     title='Grade Posted',
-                    message=f"Your grade for {enrollment.course_section.course.code}-{enrollment.course_section.section_code} has been posted: {grade}",
+                    message=f"Your grade for {enrollment.course_section.course.code}-{enrollment.course_section.section_code} has been posted: {grade}{outcome_text}",
                     payload={'enrollment_id': enrollment.id, 'grade': grade}
                 )
                 db.session.add(notification)

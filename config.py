@@ -15,6 +15,9 @@ class Config:
     # Application settings
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
     
+    # Academic policy
+    PASSING_GRADE = int(os.environ.get('PASSING_GRADE', '50'))  # Percentage threshold for pass/fail logic
+    
     # Registration behavior
     AUTO_APPROVE_REGISTRATIONS = bool(os.environ.get('AUTO_APPROVE_REGISTRATIONS', 'False').lower() in ['true','1','yes','on'])
     

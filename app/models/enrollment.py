@@ -3,6 +3,7 @@
 from app.models import db, BaseModel
 from datetime import datetime
 from sqlalchemy.orm import synonym
+from flask import current_app
 
 
 class EnrollmentStatus:
@@ -301,7 +302,9 @@ class Enrollment(BaseModel):
             enrollment.waitlist_position = i
     
     def set_grade(self, grade, grader_id=None):
-        """Set the final grade for the enrollment."""
+        """Set the final grade for the enrollment.
+        Supports both letter grades and numeric percentage grades.
+        """
         grade_points_map = {
             'A+': 4.0, 'A': 4.0, 'A-': 3.7,
             'B+': 3.3, 'B': 3.0, 'B-': 2.7,
@@ -310,20 +313,100 @@ class Enrollment(BaseModel):
             'F': 0.0, 'W': None, 'I': None
         }
         
-        self.grade = grade
-        self.grade_points = grade_points_map.get(grade)
         self.graded_at = datetime.utcnow()
+        passing_threshold = 50
+        try:
+            passing_threshold = int(current_app.config.get('PASSING_GRADE', 50))
+        except Exception:
+            passing_threshold = 50
         
-        # Update status based on grade
-        if grade == 'F':
-            self.status = 'Failed'
-        elif grade == 'W':
-            self.status = 'Withdrawn'
-        elif grade and grade != 'I':  # I = Incomplete
-            self.status = 'Completed'
+        # Normalize grade input
+        g = grade.strip() if isinstance(grade, str) else grade
+        numeric_val = None
+        if isinstance(g, (int, float)):
+            numeric_val = float(g)
+        elif isinstance(g, str):
+            try:
+                # Strip a trailing percent sign if present
+                g_clean = g.replace('%', '').strip()
+                numeric_val = float(g_clean)
+            except Exception:
+                numeric_val = None
         
-        # Update student's GPA
-        self.student.calculate_gpa()
+        if numeric_val is not None:
+            # Store as integer percentage if whole number, else as trimmed float string
+            self.grade = str(int(numeric_val)) if numeric_val.is_integer() else f"{numeric_val:.1f}"
+            # For numeric grades, do not compute grade_points; GPA logic can be extended separately
+            self.grade_points = None
+            # Update status based on threshold
+            if numeric_val >= passing_threshold:
+                self.status = 'Completed'
+            else:
+                self.status = 'Failed'
+        else:
+            # Treat as letter grade
+            self.grade = grade
+            self.grade_points = grade_points_map.get(grade)
+            # Update status based on grade
+            if grade == 'F':
+                self.status = 'Failed'
+            elif grade == 'W':
+                self.status = 'Withdrawn'
+            elif grade and grade != 'I':  # I = Incomplete
+                self.status = 'Completed'
+        
+        # Update student's GPA (will consider letter grades; numeric grades currently excluded)
+        try:
+            self.student.calculate_gpa()
+        except Exception:
+            pass
+
+    @property
+    def numeric_grade(self):
+        """Return numeric grade as float if grade is numeric, else None."""
+        try:
+            return float(str(self.grade).replace('%', '').strip()) if self.grade is not None and str(self.grade).strip() != '' and str(self.grade).replace('%','').strip().replace('.','',1).isdigit() else None
+        except Exception:
+            return None
+
+    @property
+    def derived_status_label(self):
+        """Human-readable status derived from grade and status."""
+        if self.grade in (None, '', 'I'):
+            return 'In Progress'
+        # If status explicitly failed/withdrawn, respect it
+        if (self.status or '').lower() == 'failed':
+            return 'Failed'
+        if (self.status or '').lower() == 'withdrawn':
+            return 'Withdrawn'
+        # Numeric grade handling
+        ng = self.numeric_grade
+        if ng is not None:
+            try:
+                threshold = int(current_app.config.get('PASSING_GRADE', 50))
+            except Exception:
+                threshold = 50
+            return 'Completed (Pass)' if ng >= threshold else 'Failed'
+        # Letter grade handling
+        return 'Failed' if self.grade == 'F' else 'Completed (Pass)'
+
+    @property
+    def passed(self):
+        """Return True if enrollment is a passing outcome based on grade/value."""
+        if not self.grade:
+            return False
+        if (self.status or '').lower() == 'failed':
+            return False
+        if (self.status or '').lower() == 'withdrawn':
+            return False
+        ng = self.numeric_grade
+        if ng is not None:
+            try:
+                threshold = int(current_app.config.get('PASSING_GRADE', 50))
+            except Exception:
+                threshold = 50
+            return ng >= threshold
+        return self.grade not in ('F', 'NP')
     
     def to_dict(self):
         """Convert to dictionary."""

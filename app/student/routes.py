@@ -167,8 +167,13 @@ def enroll(section_id):
     student = current_user.student_profile
     section = CourseSection.query.get_or_404(section_id)
     
-    # Use enrollment service
-    enrollment, success, messages = enroll_student(student, section)
+    # Use enrollment service with robust error handling
+    try:
+        enrollment, success, messages = enroll_student(student, section)
+    except Exception:
+        from flask import current_app
+        current_app.logger.exception('Error during enrollment for student_id=%s section_id=%s', student.id, section.id)
+        enrollment, success, messages = None, False, ['Enrollment failed due to an unexpected error. Please try again.']
     
     # Flash messages
     if success:

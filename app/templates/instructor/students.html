@@ -21,8 +21,8 @@
                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                         <td class="px-6 py-4 text-gray-900 dark:text-white">{{ e.student.user.full_name or (e.student.user.first_name ~ ' ' ~ e.student.user.last_name) }}</td>
                         <td class="px-6 py-4 text-center">
-                            <span class="px-3 py-1 rounded-full text-xs font-semibold {% if e.status.value == 'ENROLLED' %}bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300{% elif e.status.value == 'WAITLISTED' %}bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300{% else %}bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300{% endif %}">
-                                {{ e.status.value|capitalize }}
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold {% if e.status == 'Enrolled' %}bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300{% elif e.status == 'Waitlisted' %}bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300{% else %}bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300{% endif %}">
+                                {{ e.status|capitalize }}
                             </span>
                         </td>
                     </tr>

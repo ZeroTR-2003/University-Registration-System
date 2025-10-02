@@ -572,8 +572,12 @@ def create_user():
         # Create minimal profile as required
         from datetime import date
         if role_key == 'student':
-            # Generate a unique student number
-            student_number = f"S{100000 + user.id}"
+            # Generate a unique student number with per-year sequence (YYYY<N>)
+            try:
+                from app.services.identifiers import generate_student_number
+                student_number = generate_student_number()
+            except Exception:
+                student_number = f"S{100000 + user.id}"
             profile = StudentProfile(user_id=user.id, student_number=student_number, enrollment_year=date.today().year)
             db.session.add(profile)
         else:
@@ -665,7 +669,11 @@ def approve_user(user_id):
     created_any = False
     if user.is_student():
         if not user.student_profile:
-            student_number = f"S{datetime.now().year}{user.id:05d}"
+            try:
+                from app.services.identifiers import generate_student_number
+                student_number = generate_student_number()
+            except Exception:
+                student_number = f"S{datetime.now().year}{user.id:05d}"
             profile = StudentProfile(
                 user_id=user.id,
                 student_number=student_number,
@@ -718,6 +726,71 @@ def approve_user(user_id):
 
 
 # -------- Section Enrollment Management --------
+@admin_bp.route('/enroll_by_student_number', methods=['GET', 'POST'])
+@admin_required
+def enroll_by_student_number():
+    """Enroll a student into a course/section by student_number and course id or code."""
+    if request.method == 'GET':
+        # Render a simple form for manual enrollment
+        return render_template('admin/enroll_by_student_number.html', title='Enroll by Student Number')
+
+    data = request.form if request.form else request.json or {}
+    student_number = (data.get('student_number') or '').strip()
+    course_identifier = (data.get('course_identifier') or '').strip()
+    section_id = data.get('section_id', type=int) if hasattr(request, 'form') else data.get('section_id')
+    try:
+        section_id = int(section_id) if section_id is not None else None
+    except Exception:
+        section_id = None
+
+    if not student_number or not course_identifier:
+        flash('student_number and course_identifier are required', 'danger')
+        return redirect(request.referrer or url_for('admin.dashboard'))
+
+    # Look up student by number
+    student = StudentProfile.query.filter_by(student_number=student_number).first()
+    if not student:
+        flash('Student not found for given student_number', 'danger')
+        return redirect(request.referrer or url_for('admin.dashboard'))
+
+    # Resolve course by id or code
+    course = None
+    if course_identifier.isdigit():
+        course = Course.query.get(int(course_identifier))
+    if not course:
+        course = Course.query.filter_by(code=course_identifier).first()
+    if not course:
+        flash('Course not found for given identifier', 'danger')
+        return redirect(request.referrer or url_for('admin.dashboard'))
+
+    # Resolve section
+    section = None
+    if section_id:
+        section = CourseSection.query.get(section_id)
+        if not section or section.course_id != course.id:
+            flash('Section not found or does not belong to the specified course', 'danger')
+            return redirect(request.referrer or url_for('admin.course_detail_admin', course_id=course.id))
+    else:
+        section = CourseSection.query.filter_by(course_id=course.id, status='Open').order_by(CourseSection.term.desc(), CourseSection.section_code).first()
+        if not section:
+            flash('No open section found for the specified course', 'warning')
+            return redirect(url_for('admin.course_detail_admin', course_id=course.id))
+
+    # Perform enrollment using shared service with admin override context
+    try:
+        from app.services.enrollment_service import enroll_student
+        enrollment, success, messages = enroll_student(student, section, override_by=current_user.id)
+    except Exception:
+        db.session.rollback()
+        enrollment, success, messages = None, False, ['Enrollment failed due to an unexpected error.']
+
+    category = 'success' if success else 'danger'
+    for msg in messages or []:
+        flash(msg, category)
+
+    # Redirect to course detail if available
+    return redirect(url_for('admin.course_detail_admin', course_id=course.id))
+
 @admin_bp.route('/sections/<int:section_id>/enrollments')
 @admin_required
 def section_enrollments(section_id):
