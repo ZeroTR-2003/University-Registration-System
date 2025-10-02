@@ -83,6 +83,19 @@
                 <a href="{{ n.action_url }}" class="text-xs text-purple-600 hover:text-purple-700">Open</a>
               </div>
               {% endif %}
+              {% if current_user.is_authenticated and current_user.is_admin() and n.payload and (n.payload.get('new_user_id') or n.payload.get('user_id')) %}
+              <div class="mt-2 flex items-center gap-2">
+                {% set uid = n.payload.get('new_user_id') or n.payload.get('user_id') %}
+                <form method="post" action="{{ url_for('admin.approve_user', user_id=uid) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700">Approve</button>
+                </form>
+                <form method="post" action="{{ url_for('admin.delete_user', user_id=uid) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">Reject</button>
+                </form>
+              </div>
+              {% endif %}
             </li>
             {% endfor %}
           </ul>

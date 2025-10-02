@@ -136,6 +136,7 @@ def register():
                     )
                     db.session.add(note)
                 # Also create a system announcement targeted to Admins
+                # (Actions will appear via inbox notifications.)
                 ann = Announcement(
                     author_id=admin_role.users[0].id if admin_role.users else 1,
                     title='New user registration pending approval',

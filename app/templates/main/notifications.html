@@ -29,6 +29,17 @@
             {% if n.action_url %}
             <a href="{{ n.action_url }}" class="px-3 py-2 text-xs bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 rounded">Open</a>
             {% endif %}
+            {% if current_user.is_authenticated and current_user.is_admin() and n.payload and (n.payload.get('new_user_id') or n.payload.get('user_id')) %}
+            {% set uid = n.payload.get('new_user_id') or n.payload.get('user_id') %}
+            <form method="post" action="{{ url_for('admin.approve_user', user_id=uid) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="px-3 py-2 text-xs bg-green-600 text-white rounded hover:bg-green-700">Approve</button>
+            </form>
+            <form method="post" action="{{ url_for('admin.delete_user', user_id=uid) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="px-3 py-2 text-xs bg-red-600 text-white rounded hover:bg-red-700">Reject</button>
+            </form>
+            {% endif %}
             {% if not n.is_read %}
             <form method="post" action="{{ url_for('main.notifications_mark_read', note_id=n.id) }}">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
