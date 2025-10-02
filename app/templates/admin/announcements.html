@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="animate-fade-in">
+  <div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-10 mb-8 rounded-2xl">
+    <h1 class="text-3xl font-bold"><i class="fas fa-bullhorn mr-3"></i>Announcements</h1>
+    <p class="text-indigo-100">All announcements with filtering</p>
+  </div>
+
+  <div class="mb-4">
+    <form method="get" class="flex gap-3">
+      <select name="role" class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
+        <option value="">Any Role</option>
+        <option value="All" {% if request.args.get('role') == 'All' %}selected{% endif %}>All</option>
+        <option value="Admin" {% if request.args.get('role') == 'Admin' %}selected{% endif %}>Admins</option>
+        <option value="Instructor" {% if request.args.get('role') == 'Instructor' %}selected{% endif %}>Instructors</option>
+        <option value="Student" {% if request.args.get('role') == 'Student' %}selected{% endif %}>Students</option>
+      </select>
+      <input type="number" name="course_id" placeholder="Course ID" value="{{ request.args.get('course_id','') }}" class="px-3 py-2 rounded-lg border">
+      <input type="number" name="department_id" placeholder="Department ID" value="{{ request.args.get('department_id','') }}" class="px-3 py-2 rounded-lg border">
+      <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">Filter</button>
+      <a href="{{ url_for('admin.announcements') }}" class="px-4 py-2 bg-gray-100 rounded-lg">Clear</a>
+    </form>
+  </div>
+
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+    {% if announcements %}
+      <ul class="divide-y divide-gray-200 dark:divide-gray-700">
+        {% for a in announcements %}
+        <li class="p-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="text-lg font-semibold text-gray-900 dark:text-white">{{ a.title }}</div>
+              <div class="text-sm text-gray-600 dark:text-gray-400">{{ a.body }}</div>
+              {% if a.course_section %}
+                <div class="text-xs text-gray-500 mt-1">{{ a.course_section.course.code }} - {{ a.course_section.section_code }} ({{ a.course_section.term }})</div>
+              {% endif %}
+            </div>
+            <span class="px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 text-xs text-gray-600 dark:text-gray-300">{{ a.announcement_type or 'General' }}</span>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="p-8 text-center text-gray-600 dark:text-gray-400">No announcements</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

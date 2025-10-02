@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="animate-fade-in">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-10 mb-8 rounded-2xl">
+        <h1 class="text-4xl font-bold mb-2"><i class="fas fa-user-plus mr-3"></i>Enroll in Course</h1>
+        <p class="text-indigo-100">Select a course section to enroll</p>
+    </div>
+
+    <div class="max-w-3xl mx-auto">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
+            <form method="post" class="space-y-6">
+                {{ form.hidden_tag() }}
+                
+                <!-- Course Section -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-book mr-2 text-indigo-600"></i>{{ form.course_section_id.label.text }}
+                    </label>
+                    {{ form.course_section_id(class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-transparent") }}
+                    {% if form.course_section_id.errors %}
+                        {% for error in form.course_section_id.errors %}
+                            <p class="mt-1 text-sm text-red-600 dark:text-red-400"><i class="fas fa-exclamation-circle mr-1"></i>{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <!-- Audit Option -->
+                {% if form.audit %}
+                <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                    <label class="flex items-center space-x-3 cursor-pointer">
+                        {{ form.audit(class="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500") }}
+                        <span class="text-gray-700 dark:text-gray-300 font-medium">
+                            {{ form.audit.label.text }}
+                        </span>
+                    </label>
+                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 ml-8">Audit mode: No grades, credits, or assignments</p>
+                </div>
+                {% endif %}
+
+                <!-- Notes -->
+                {% if form.notes %}
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-sticky-note mr-2 text-yellow-600"></i>{{ form.notes.label.text }}
+                    </label>
+                    {{ form.notes(class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-transparent", rows="4", placeholder="Optional notes about why you're taking this course...") }}
+                </div>
+                {% endif %}
+
+                <!-- Submit Buttons -->
+                <div class="flex gap-4 pt-4">
+                    {{ form.submit(class="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all transform hover:scale-105 cursor-pointer") }}
+                    <a href="{{ url_for('student.courses') }}" class="flex-1 px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-semibold text-center hover:bg-gray-200 dark:hover:bg-gray-600 transition-all">
+                        <i class="fas fa-times mr-2"></i>Cancel
+                    </a>
+                </div>
+            </form>
+
+            <!-- Help Info -->
+            <div class="mt-8 p-4 bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-500 rounded">
+                <div class="flex items-start">
+                    <i class="fas fa-info-circle text-yellow-600 mt-1 mr-3"></i>
+                    <div>
+                        <h4 class="font-semibold text-gray-900 dark:text-white mb-1">Enrollment Tips</h4>
+                        <ul class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                            <li>• Check prerequisites before enrolling</li>
+                            <li>• If a section is full, you'll be added to the waitlist</li>
+                            <li>• You can drop courses before the deadline without penalty</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

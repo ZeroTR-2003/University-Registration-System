@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="animate-fade-in">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-10 mb-8 rounded-2xl">
+        <div class="max-w-7xl mx-auto px-4">
+            <h1 class="text-4xl font-bold mb-2"><i class="fas fa-chalkboard-teacher mr-3"></i>Instructor Dashboard</h1>
+            <p class="text-blue-100">Your current teaching sections</p>
+        </div>
+    </div>
+
+    {% if courses %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for c in courses %}
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 hover-lift">
+            <div class="flex items-center justify-between mb-3">
+                <span class="px-3 py-1 bg-blue-600 text-white rounded-full text-sm font-semibold">{{ c.course.code }}</span>
+                <span class="px-3 py-1 bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 rounded-full text-sm">{{ c.term }}</span>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">{{ c.course.title|default('Untitled Course') }}</h3>
+            <div class="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-4">
+                <span><i class="fas fa-layer-group mr-1 text-indigo-600"></i>Section {{ c.section_code }}</span>
+                <span><i class="fas fa-users mr-1 text-green-600"></i>{{ c.enrolled|default(0) }}/{{ c.capacity|default(30) }}</span>
+            </div>
+            <div class="flex gap-2">
+<a href="{{ url_for('instructor.course_detail', id=c.id) if 'instructor.course_detail' in current_app.view_functions else '#' }}" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition">Manage</a>
+                <a href="{{ url_for('instructor.students', section_id=c.id) if 'instructor.students' in current_app.view_functions else '#' }}" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition">Students</a>
+                <a href="{{ url_for('instructor.roster_pdf', section_id=c.id) if 'instructor.roster_pdf' in current_app.view_functions else '#' }}" class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition">Roster PDF</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-16 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+        <div class="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-chalkboard text-5xl text-gray-400"></i>
+        </div>
+        <h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">No current sections</h3>
+        <p class="text-gray-600 dark:text-gray-400">You're not assigned to teach any sections this term.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

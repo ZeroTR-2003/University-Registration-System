@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="animate-fade-in">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-white"><i class="fas fa-users mr-2"></i>{{ title }}</h1>
+    <div class="flex gap-2">
+      <a href="{{ url_for('admin.course_detail_admin', course_id=section.course_id) }}" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded">Back to Course</a>
+      <form id="promote-one" method="post" action="{{ url_for('admin.admin_promote_waitlist', section_id=section.id) }}">
+        <button type="submit" class="js-confirm px-4 py-2 bg-indigo-600 text-white rounded" data-form-id="promote-one" data-message="Promote the next student from the waitlist?">Promote Waitlist</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="grid md:grid-cols-2 gap-6">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-6">
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Enrolled ({{ enrolled|length }})</h2>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-gray-700/50">
+            <tr>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            {% for e in enrolled %}
+            <tr>
+              <td class="px-4 py-2">
+                <div class="text-gray-900 dark:text-gray-100 font-medium">{{ e.student.user.full_name }}</div>
+                <div class="text-gray-500 dark:text-gray-400 text-sm">S#: {{ e.student.student_number }}</div>
+              </td>
+              <td class="px-4 py-2">
+                <form id="drop-{{ e.id }}" method="post" action="{{ url_for('admin.admin_drop_enrollment', enrollment_id=e.id) }}">
+                  <button type="submit" class="js-confirm px-3 py-1 bg-red-600 text-white rounded" data-form-id="drop-{{ e.id }}" data-message="Drop this enrollment?">Drop</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-6">
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Waitlisted ({{ waitlisted|length }})</h2>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-gray-700/50">
+            <tr>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Position</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            {% for e in waitlisted %}
+            <tr>
+              <td class="px-4 py-2">
+                <div class="text-gray-900 dark:text-gray-100 font-medium">{{ e.student.user.full_name }}</div>
+                <div class="text-gray-500 dark:text-gray-400 text-sm">S#: {{ e.student.student_number }}</div>
+              </td>
+              <td class="px-4 py-2 text-gray-800 dark:text-gray-200">{{ e.waitlist_position }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="animate-fade-in">
+    <div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-10 mb-8 rounded-2xl">
+        <div class="max-w-7xl mx-auto px-4">
+            <h1 class="text-4xl font-bold mb-2"><i class="fas fa-th-large mr-3"></i>Dashboard</h1>
+            <p class="text-indigo-100">Welcome to the University Registration System</p>
+        </div>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <a href="{{ url_for('main.courses') }}" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 hover-lift">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-10 h-10 bg-indigo-600 text-white rounded-lg flex items-center justify-center"><i class="fas fa-book"></i></div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white">Browse Courses</h3>
+            </div>
+            <p class="text-gray-600 dark:text-gray-400">Explore the course catalog and details</p>
+        </a>
+        <a href="{{ url_for('main.schedule') }}" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 hover-lift">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-10 h-10 bg-green-600 text-white rounded-lg flex items-center justify-center"><i class="fas fa-calendar"></i></div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white">View Schedule</h3>
+            </div>
+            <p class="text-gray-600 dark:text-gray-400">See available sections for the current term</p>
+        </a>
+        <a href="{{ url_for('main.announcements') }}" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 hover-lift">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-10 h-10 bg-pink-600 text-white rounded-lg flex items-center justify-center"><i class="fas fa-bullhorn"></i></div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white">Announcements</h3>
+            </div>
+            <p class="text-gray-600 dark:text-gray-400">Latest news and campus updates</p>
+        </a>
+    </div>
+</div>
+{% endblock %}

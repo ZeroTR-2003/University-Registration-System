@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="animate-fade-in">
+    <div class="mb-6">
+        <a href="{{ url_for('instructor.courses') }}" class="text-indigo-600 hover:text-indigo-700">
+            <i class="fas fa-arrow-left mr-2"></i>Back to My Courses
+        </a>
+    </div>
+    
+    <div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-10 mb-8 rounded-2xl">
+        <h1 class="text-4xl font-bold mb-2"><i class="fas fa-layer-group mr-3"></i>{{ section.course.code }} - {{ section.section_code }}</h1>
+        <p class="text-indigo-100 mb-4">{{ section.course.title|default('Course Detail') }} - {{ section.term }}</p>
+        <div class="flex items-center space-x-6 text-sm">
+            <span><i class="fas fa-users mr-2"></i>{{ enrollments|length }} Students Enrolled</span>
+            <span><i class="fas fa-door-open mr-2"></i>{{ section.capacity - (section.enrolled_count or 0) }} Seats Available</span>
+            <span><i class="fas fa-tasks mr-2"></i>{{ assignments|length }} Assignments</span>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="flex gap-4 mb-6">
+        <a href="{{ url_for('instructor.roster', section_id=section.id) }}" class="px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition">
+            <i class="fas fa-clipboard-list mr-2"></i>Manage Grades
+        </a>
+        <a href="{{ url_for('instructor.students', section_id=section.id) }}" class="px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition">
+            <i class="fas fa-users mr-2"></i>View All Students
+        </a>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-6">
+        <!-- Enrollments -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4"><i class="fas fa-users mr-2 text-green-600"></i>Enrollments</h2>
+            {% if enrollments %}
+            <ul class="divide-y divide-gray-200 dark:divide-gray-700">
+                {% for e in enrollments %}
+                <li class="py-3 flex items-center justify-between">
+                    <span class="text-gray-900 dark:text-white">{{ e.student.user.full_name or (e.student.user.first_name ~ ' ' ~ e.student.user.last_name) }}</span>
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold {% if e.status.value == 'ENROLLED' %}bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300{% elif e.status.value == 'WAITLISTED' %}bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300{% else %}bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300{% endif %}">
+                        {{ e.status.value|capitalize }}
+                    </span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-gray-600 dark:text-gray-400">No enrollments.</p>
+            {% endif %}
+        </div>
+
+        <!-- Assignments -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4"><i class="fas fa-tasks mr-2 text-pink-600"></i>Assignments</h2>
+            {% if assignments %}
+            <ul class="space-y-3">
+                {% for a in assignments %}
+                <li class="p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="font-semibold text-gray-900 dark:text-white">{{ a.title|default('Untitled Assignment') }}</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Due: {{ a.due_date.strftime('%B %d, %Y') if a.due_date else 'No due date' }}</p>
+                        </div>
+                        <a href="{{ url_for('instructor.gradebook', section_id=section.id) if 'instructor.gradebook' in current_app.view_functions else '#' }}" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 transition">
+                            Gradebook
+                        </a>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-gray-600 dark:text-gray-400">No assignments.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

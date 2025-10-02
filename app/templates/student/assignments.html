@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="animate-fade-in">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-10 mb-8 rounded-2xl">
+        <h1 class="text-4xl font-bold mb-2"><i class="fas fa-tasks mr-3"></i>Assignments</h1>
+        <p class="text-purple-100">View and submit your course assignments</p>
+    </div>
+
+    {% if assignments %}
+        <div class="space-y-6">
+            {% for a in assignments %}
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 {% if a.submission %}bg-green-50 dark:bg-green-900/10 border-green-500{% elif a.is_overdue %}bg-red-50 dark:bg-red-900/10 border-red-500{% endif %} hover-lift">
+                <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="px-3 py-1 bg-purple-600 text-white rounded-full text-sm font-semibold">
+                                {{ a.course_section.course.code if a.course_section else 'N/A' }}
+                            </span>
+                            {% if a.submission %}
+                                <span class="px-3 py-1 bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300 rounded-full text-sm font-semibold">
+                                    <i class="fas fa-check mr-1"></i>Submitted
+                                </span>
+                            {% elif a.is_overdue %}
+                                <span class="px-3 py-1 bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300 rounded-full text-sm font-semibold">
+                                    <i class="fas fa-exclamation-triangle mr-1"></i>Overdue
+                                </span>
+                            {% else %}
+                                <span class="px-3 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-300 rounded-full text-sm font-semibold">
+                                    <i class="fas fa-clock mr-1"></i>Pending
+                                </span>
+                            {% endif %}
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                            <a href="{{ url_for('student.assignment_detail', id=a.id) }}" class="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">
+                                {{ a.title|default('Untitled Assignment') }}
+                            </a>
+                        </h3>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm mb-3">{{ a.description[:150]|default('No description') }}...</p>
+                        <div class="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                            <span><i class="fas fa-calendar mr-1 text-red-600"></i>Due: {{ a.due_date.strftime('%B %d, %Y') if a.due_date else 'No due date' }}</span>
+                            <span><i class="fas fa-chart-line mr-1 text-blue-600"></i>{{ a.max_points|default(100) }} Points</span>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        {% if a.submission %}
+                            <a href="{{ url_for('student.assignment_detail', id=a.id) }}" class="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition">
+                                <i class="fas fa-eye mr-2"></i>View
+                            </a>
+                        {% else %}
+                            <a href="{{ url_for('student.submit_assignment', assignment_id=a.id) }}" class="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition">
+                                <i class="fas fa-paper-plane mr-2"></i>Submit
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-16 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+            <div class="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-tasks text-5xl text-gray-400"></i>
+            </div>
+            <h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">No Assignments</h3>
+            <p class="text-gray-600 dark:text-gray-400">You don't have any assignments at the moment</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

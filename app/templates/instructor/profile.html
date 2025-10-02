@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="animate-fade-in">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-10 mb-8 rounded-2xl">
+        <h1 class="text-4xl font-bold mb-2"><i class="fas fa-user-tie mr-3"></i>My Profile</h1>
+        <p class="text-indigo-100">Manage your instructor information</p>
+    </div>
+
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div class="p-8">
+                <form method="post" class="space-y-6">
+                    {{ form.hidden_tag() }}
+
+                    <!-- Employee Number (Read-only) -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            <i class="fas fa-id-badge mr-2 text-indigo-600"></i>{{ form.employee_number.label.text }}
+                        </label>
+                        {{ form.employee_number(class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100", readonly=true) }}
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">This field cannot be modified</p>
+                        {% if form.employee_number.errors %}
+                            {% for error in form.employee_number.errors %}
+                                <p class="mt-1 text-sm text-red-600 dark:text-red-400"><i class="fas fa-exclamation-circle mr-1"></i>{{ error }}</p>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <!-- Title -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-graduation-cap mr-2 text-blue-600"></i>{{ form.title.label.text }}
+                            </label>
+                            {{ form.title(class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-transparent") }}
+                            {% if form.title.errors %}
+                                {% for error in form.title.errors %}
+                                    <p class="mt-1 text-sm text-red-600 dark:text-red-400"><i class="fas fa-exclamation-circle mr-1"></i>{{ error }}</p>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+
+                        <!-- Office Phone -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-phone mr-2 text-green-600"></i>{{ form.office_phone.label.text }}
+                            </label>
+                            {{ form.office_phone(class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-transparent") }}
+                            {% if form.office_phone.errors %}
+                                {% for error in form.office_phone.errors %}
+                                    <p class="mt-1 text-sm text-red-600 dark:text-red-400"><i class="fas fa-exclamation-circle mr-1"></i>{{ error }}</p>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <!-- Office Building -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-building mr-2 text-purple-600"></i>{{ form.office_building.label.text }}
+                            </label>
+                            {{ form.office_building(class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-transparent") }}
+                        </div>
+                        <!-- Office Room -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-door-closed mr-2 text-pink-600"></i>{{ form.office_room.label.text }}
+                            </label>
+                            {{ form.office_room(class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-transparent") }}
+                        </div>
+                    </div>
+
+                    <!-- Research Interests -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            <i class="fas fa-flask mr-2 text-amber-600"></i>{{ form.research_interests.label.text }}
+                        </label>
+                        {{ form.research_interests(class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-transparent", rows="4") }}
+                    </div>
+
+                    <!-- Bio -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            <i class="fas fa-user mr-2 text-indigo-600"></i>{{ form.bio.label.text }}
+                        </label>
+                        {{ form.bio(class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-transparent", rows="6", placeholder="Tell students about your background, interests, and teaching philosophy") }}
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="flex gap-4 pt-4">
+                        {{ form.submit(class="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all transform hover:scale-105 cursor-pointer") }}
+                        <a href="{{ url_for('instructor.dashboard') }}" class="flex-1 px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-semibold text-center hover:bg-gray-200 dark:hover:bg-gray-600 transition-all">
+                            <i class="fas fa-times mr-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Account Info Section -->
+            <div class="bg-gray-50 dark:bg-gray-900 p-6 border-t border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">
+                    <i class="fas fa-user mr-2 text-indigo-600"></i>Account Information
+                </h3>
+                <div class="grid md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <span class="text-gray-600 dark:text-gray-400">Email:</span>
+                        <span class="ml-2 text-gray-900 dark:text-white font-medium">{{ current_user.email }}</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-600 dark:text-gray-400">Name:</span>
+                        <span class="ml-2 text-gray-900 dark:text-white font-medium">{{ current_user.full_name or (current_user.first_name ~ ' ' ~ current_user.last_name) }}</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-600 dark:text-gray-400">Account Created:</span>
+                        <span class="ml-2 text-gray-900 dark:text-white font-medium">{{ current_user.created_at.strftime('%B %d, %Y') if current_user.created_at else 'N/A' }}</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-600 dark:text-gray-400">Last Login:</span>
+                        <span class="ml-2 text-gray-900 dark:text-white font-medium">{{ current_user.last_login.strftime('%B %d, %Y') if current_user.last_login else 'N/A' }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="animate-fade-in">
+  <div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-10 mb-8 rounded-2xl">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-4xl font-bold mb-2"><i class="fas fa-university mr-3"></i>Registrar Dashboard</h1>
+        <p class="text-indigo-100">Approve transcript requests, manage overrides and waitlists</p>
+      </div>
+      <div class="flex gap-3">
+        <a href="{{ url_for('registrar.transcript_requests') }}" class="px-6 py-3 bg-white text-indigo-700 rounded-lg font-semibold hover:bg-gray-100 transition-all shadow-lg">
+          <i class="fas fa-file-alt mr-2"></i>Transcript Requests
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid md:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-6">
+      <div class="text-gray-500 text-sm">Pending Requests</div>
+      <div class="text-3xl font-bold text-indigo-600">{{ stats.pending_transcripts }}</div>
+    </div>
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-6">
+      <div class="text-gray-500 text-sm">Approved</div>
+      <div class="text-3xl font-bold text-green-600">{{ stats.approved_transcripts }}</div>
+    </div>
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-6">
+      <div class="text-gray-500 text-sm">Issued</div>
+      <div class="text-3xl font-bold text-blue-600">{{ stats.issued_transcripts }}</div>
+    </div>
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-6">
+      <div class="text-gray-500 text-sm">Sections with Waitlist</div>
+      <div class="text-3xl font-bold text-yellow-600">{{ stats.waitlisted_sections }}</div>
+    </div>
+  </div>
+
+  <!-- Override Enrollment -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-6 mb-8">
+    <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4"><i class="fas fa-user-plus mr-2 text-purple-600"></i>Override Enrollment</h2>
+    <form id="override-enroll" method="post" action="{{ url_for('registrar.override_enrollment') }}" class="grid md:grid-cols-3 gap-3 items-end">
+      <div>
+        <label class="block text-sm text-gray-600 dark:text-gray-300 mb-1">Student User ID</label>
+        <input type="number" name="student_user_id" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" placeholder="e.g., 42" required>
+      </div>
+      <div>
+        <label class="block text-sm text-gray-600 dark:text-gray-300 mb-1">Section ID</label>
+        <input type="number" name="section_id" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" placeholder="e.g., 101" required>
+      </div>
+      <div>
+        <button type="submit" class="js-confirm w-full px-4 py-2 bg-purple-600 text-white rounded-lg" data-form-id="override-enroll" data-message="Force-enroll this student into the section?">Enroll (Override)</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Recent Transcript Requests -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+        <i class="fas fa-clock mr-2 text-indigo-600"></i>Recent Transcript Requests
+      </h2>
+      <a href="{{ url_for('registrar.transcript_requests') }}" class="text-indigo-600 hover:underline">View all</a>
+    </div>
+    {% if recent_requests %}
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-gray-700/50">
+            <tr>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Requested</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            {% for r in recent_requests %}
+              <tr>
+                <td class="px-4 py-2 text-gray-900 dark:text-gray-100">{{ r.student.user.full_name }}</td>
+                <td class="px-4 py-2">
+                  <span class="px-2 py-1 rounded text-xs {% if r.status=='Pending' %}bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300{% elif r.status=='Approved' %}bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300{% elif r.status=='Rejected' %}bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300{% else %}bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300{% endif %}">{{ r.status }}</span>
+                </td>
+                <td class="px-4 py-2 text-gray-600 dark:text-gray-300">{{ r.created_at.strftime('%Y-%m-%d %H:%M') if r.created_at else '' }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="text-gray-600 dark:text-gray-300">No recent requests.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="animate-fade-in">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-10 mb-8 rounded-2xl">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-4xl font-bold mb-2"><i class="fas fa-file-alt mr-3"></i>My Transcript</h1>
+                <p class="text-blue-100">View and download your academic record</p>
+            </div>
+            <div class="flex gap-3">
+                <a href="{{ url_for('student.download_transcript') }}" class="px-6 py-3 bg-white text-blue-600 rounded-lg font-semibold hover:bg-gray-100 transition-all shadow-lg">
+                    <i class="fas fa-download mr-2"></i>Download Unofficial PDF
+                </a>
+                <form id="request-official-form" method="post" action="{{ url_for('student.request_official_transcript') }}">
+                    <button type="submit" class="js-confirm px-6 py-3 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition-all shadow-lg" data-form-id="request-official-form" data-message="Submit an official transcript request to the Registrar?">
+                        <i class="fas fa-certificate mr-2"></i>Request Official Transcript
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Info Header -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8 mb-8">
+        <div class="grid md:grid-cols-2 gap-6">
+            <div>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    <i class="fas fa-user mr-2 text-blue-600"></i>Student Information
+                </h3>
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600 dark:text-gray-400">Name:</span>
+                        <span class="text-gray-900 dark:text-white font-semibold">{{ student.user.first_name }} {{ student.user.last_name }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600 dark:text-gray-400">Student ID:</span>
+                        <span class="text-gray-900 dark:text-white font-semibold">{{ student.student_id }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600 dark:text-gray-400">Date of Birth:</span>
+                        <span class="text-gray-900 dark:text-white font-semibold">{{ student.date_of_birth.strftime('%B %d, %Y') if student.date_of_birth else 'N/A' }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600 dark:text-gray-400">Major:</span>
+                        <span class="text-gray-900 dark:text-white font-semibold">{{ student.major or 'Undeclared' }}</span>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    <i class="fas fa-chart-line mr-2 text-green-600"></i>Academic Summary
+                </h3>
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600 dark:text-gray-400">Cumulative GPA:</span>
+                        <span class="text-2xl font-bold text-green-600">{{ "%.2f"|format(student.gpa) if student.gpa else 'N/A' }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600 dark:text-gray-400">Credits Earned:</span>
+                        <span class="text-gray-900 dark:text-white font-semibold">{{ student.credits_earned or 0 }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600 dark:text-gray-400">Academic Standing:</span>
+                        <span class="text-gray-900 dark:text-white font-semibold">{{ student.academic_standing or 'Good Standing' }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transcript Actions -->
+    <div class="grid md:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8 hover:shadow-xl transition-shadow">
+            <div class="flex items-start space-x-4">
+                <div class="flex-shrink-0">
+                    <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-file-download text-3xl text-blue-600"></i>
+                    </div>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">Unofficial Transcript</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">Download a PDF copy of your unofficial transcript for personal use and reference.</p>
+                    <a href="{{ url_for('student.download_transcript') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-download mr-2"></i>Download PDF
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8 hover:shadow-xl transition-shadow">
+            <div class="flex items-start space-x-4">
+                <div class="flex-shrink-0">
+                    <div class="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-certificate text-3xl text-green-600"></i>
+                    </div>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">Official Transcript</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">Request an official transcript for applications, transfers, and official purposes.</p>
+                    <form id="request-official-2" method="post" action="{{ url_for('student.request_official_transcript') }}">
+                        <button type="submit" class="js-confirm inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors" data-form-id="request-official-2" data-message="Submit an official transcript request to the Registrar?">
+                            <i class="fas fa-certificate mr-2"></i>Request Official
+                        </button>
+                    </form>
+                    <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                        {% set last_req = student.transcript_requests|sort(attribute='created_at')|last if student.transcript_requests is defined else None %}
+                        {% if last_req %}
+                          Last request status: <span class="font-semibold">{{ last_req.status }}</span>
+                          {% if last_req.status == 'Approved' %}
+                            — <a href="{{ url_for('student.download_official_transcript') }}" class="text-indigo-600 hover:underline">Download approved official transcript</a>
+                          {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Stats -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            <i class="fas fa-info-circle mr-2 text-blue-600"></i>Transcript Information
+        </h3>
+        <div class="grid md:grid-cols-3 gap-6">
+            <div class="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <div class="text-3xl font-bold text-blue-600 mb-2">{{ "%.2f"|format(student.gpa) if student.gpa else 'N/A' }}</div>
+                <div class="text-sm text-gray-600 dark:text-gray-400">Cumulative GPA</div>
+            </div>
+            <div class="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <div class="text-3xl font-bold text-green-600 mb-2">{{ student.credits_earned or 0 }}</div>
+                <div class="text-sm text-gray-600 dark:text-gray-400">Credits Earned</div>
+            </div>
+            <div class="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <div class="text-3xl font-bold text-purple-600 mb-2">{{ student.academic_standing or 'Good' }}</div>
+                <div class="text-sm text-gray-600 dark:text-gray-400">Academic Standing</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Note -->
+    <div class="mt-8 p-4 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 rounded">
+        <div class="flex items-start">
+            <i class="fas fa-info-circle text-blue-600 mt-1 mr-3"></i>
+            <div class="text-sm text-gray-700 dark:text-gray-300">
+                <strong>About Transcripts:</strong>
+                <ul class="mt-2 ml-4 list-disc space-y-1">
+                    <li><strong>Unofficial transcripts</strong> are suitable for personal records and general reference.</li>
+                    <li><strong>Official transcripts</strong> contain a security watermark and are accepted by institutions and employers.</li>
+                    <li>All transcript PDFs include your complete academic history, grades, GPA, and course details.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

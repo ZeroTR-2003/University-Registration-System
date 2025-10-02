@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Search Results</h1>
+<p>Query: {{ query }}</p>
+<ul>
+  {% for c in results.courses %}
+  <li>{{ c.code }} - {{ c.title }}</li>
+  {% endfor %}
+</ul>
+{% endblock %}

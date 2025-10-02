@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="animate-fade-in">
+    <div class="bg-gradient-to-r from-pink-600 to-purple-600 text-white py-10 mb-8 rounded-2xl">
+        <h1 class="text-4xl font-bold mb-2"><i class="fas fa-users-cog mr-3"></i>Manage Users</h1>
+        <p class="text-pink-100">View and administer user accounts</p>
+    </div>
+
+    <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <a href="{{ url_for('admin.create_user') }}" class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">
+            <i class="fas fa-plus mr-2"></i>New User
+        </a>
+        <div class="flex items-center gap-3">
+            <form method="get" class="flex items-center gap-3">
+                <label class="text-sm">Status</label>
+                <select name="status" class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
+                    <option value="" {% if not status %}selected{% endif %}>All</option>
+                    <option value="pending" {% if status == 'pending' %}selected{% endif %}>Pending Approvals</option>
+                    <option value="active" {% if status == 'active' %}selected{% endif %}>Active</option>
+                </select>
+                <input type="text" name="q" value="{{ q or '' }}" placeholder="Search name or email" class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
+                {% include 'partials/per_page_select.html' %}
+                <button type="submit" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">Apply</button>
+                <a href="{{ url_for('admin.users') }}" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg">Clear</a>
+            </form>
+            <a href="{{ url_for('admin.users', status='pending') }}" class="px-4 py-2 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 rounded-lg hover:bg-yellow-200 dark:hover:bg-yellow-800">Pending Approvals</a>
+        </div>
+    </div>
+
+    {% if users %}
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50 dark:bg-gray-900">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Email</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Name</th>
+<th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Roles</th>
+                        <th class="px-6 py-3 text-right text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                    {% for u in users %}
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        <td class="px-6 py-4 text-gray-900 dark:text-white font-medium">{{ u.email }}</td>
+                        <td class="px-6 py-4 text-gray-900 dark:text-white">{{ u.full_name or (u.first_name ~ ' ' ~ u.last_name) }}
+                            {% if not u.is_active %}
+                            <span class="ml-2 px-2 py-1 text-xs rounded bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200">Pending</span>
+                            {% endif %}
+                        </td>
+<td class="px-6 py-4 text-gray-900 dark:text-white">{{ u.roles_list|join(', ') if u.roles_list else 'User' }}</td>
+                        <td class="px-6 py-4 text-right space-x-2">
+                            <a href="{{ url_for('admin.edit_user', user_id=u.id) }}" class="px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 transition">Edit</a>
+                            {% if not u.is_active %}
+                            <form method="post" id="approve-user-{{ u.id }}" action="{{ url_for('admin.approve_user', user_id=u.id) }}" class="inline">
+                                {{ delete_form.hidden_tag() }}
+                                <button type="button" data-form-id="approve-user-{{ u.id }}" data-message="Approve this user and activate the account?" class="js-confirm px-3 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition">Approve</button>
+                            </form>
+                            {% else %}
+                            <form method="post" id="deactivate-user-{{ u.id }}" action="{{ url_for('admin.delete_user', user_id=u.id) }}" class="inline">
+                                {{ delete_form.hidden_tag() }}
+                                <button type="button" data-form-id="deactivate-user-{{ u.id }}" data-message="Deactivate this user?" class="js-confirm px-3 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 transition">Deactivate</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-16 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+        <div class="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-users-cog text-5xl text-gray-400"></i>
+        </div>
+        <h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">No Users</h3>
+        <p class="text-gray-600 dark:text-gray-400">Create users to manage the platform</p>
+    </div>
+    {% endif %}
+
+    {% if pagination and pagination.pages > 1 %}
+    <div class="flex justify-center space-x-2 mt-6">
+        {% if pagination.has_prev %}
+            <a href="{{ url_for('admin.users', page=pagination.prev_num, per_page=pagination.per_page) }}" class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        {% endif %}
+        {% for p in pagination.iter_pages() %}
+          {% if p %}
+            {% if p == pagination.page %}
+              <span class="px-3 py-2 bg-indigo-600 text-white rounded-lg">{{ p }}</span>
+            {% else %}
+              <a href="{{ url_for('admin.users', page=p, per_page=pagination.per_page) }}" class="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">{{ p }}</a>
+            {% endif %}
+          {% else %}
+            <span class="px-2 py-2 text-gray-500">...</span>
+          {% endif %}
+        {% endfor %}
+        {% if pagination.has_next %}
+            <a href="{{ url_for('admin.users', page=pagination.next_num, per_page=pagination.per_page) }}" class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

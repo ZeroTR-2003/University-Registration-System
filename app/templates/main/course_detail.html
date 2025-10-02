@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>{{ course.title }}</h1>
+<p>{{ course.description }}</p>
+<h2>Open Sections</h2>
+<ul>
+  {% for s in sections %}
+    <li>
+      {{ s.section_code }} ({{ s.term }}) - Available: {{ s.capacity - s.enrolled_count }}
+      {% if current_user.is_authenticated and current_user.is_student() %}
+        <form method="post" action="{{ url_for('student.enroll', section_id=s.id) }}" style="display:inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="px-2 py-1 bg-indigo-600 text-white rounded">Enroll</button>
+        </form>
+      {% endif %}
+    </li>
+  {% else %}
+    <li>No open sections.</li>
+  {% endfor %}
+</ul>
+
+{% if current_user.is_authenticated and current_user.is_admin() %}
+<div class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+  <h3 class="font-semibold mb-2">Admin Actions</h3>
+  <div class="flex gap-3">
+    <a href="{{ url_for('admin.sections', course=course.id) }}" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Manage Sections</a>
+    <a href="{{ url_for('admin.create_section') }}" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">Add Section</a>
+    <a href="{{ url_for('admin.edit_course', course_id=course.id) }}" class="px-4 py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200">Edit Course</a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

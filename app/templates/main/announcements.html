@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="animate-fade-in">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-12 mb-8 rounded-2xl">
+        <div class="max-w-7xl mx-auto px-4">
+            <h1 class="text-4xl font-bold mb-2"><i class="fas fa-bullhorn mr-3"></i>Announcements</h1>
+            <p class="text-purple-100">Stay updated with the latest news and important information</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Announcements (2 columns) -->
+      <div class="lg:col-span-2">
+        {% if announcements and announcements.items %}
+          <div class="space-y-6 mb-8">
+            {% for a in announcements.items %}
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover-lift">
+              <div class="flex">
+                <div class="w-2 {% if a.priority == 'Urgent' %}bg-red-500{% elif a.priority == 'High' %}bg-yellow-500{% else %}bg-gradient-to-b from-purple-500 to-pink-500{% endif %}"></div>
+                <div class="flex-1 p-6">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-2">
+                      <span class="px-3 py-1 bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 rounded-full text-xs font-semibold">{{ a.announcement_type or 'General' }}</span>
+                      <span class="text-sm text-gray-500 dark:text-gray-400"><i class="fas fa-clock mr-1"></i>{{ a.created_at.strftime('%b %d, %Y') if a.created_at else '' }}</span>
+                    </div>
+<a href="{{ url_for('main.announcement_detail', id=a.id) }}" class="px-3 py-2 bg-purple-600 text-white rounded-md text-sm hover:bg-purple-700">Read</a>
+                  </div>
+                  <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-1">{{ a.title }}</h3>
+                  <p class="text-gray-600 dark:text-gray-400">{{ (a.body[:200] ~ '...') if a.body and a.body|length > 200 else (a.body or '') }}</p>
+                  <div class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                    <i class="fas fa-user mr-1"></i>{{ a.author.full_name if a.author else 'Administration' }}
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% if announcements.pages > 1 %}
+          <div class="flex justify-center items-center space-x-2">
+            {% if announcements.has_prev %}
+              <a href="?page={{ announcements.prev_num }}" class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Prev</a>
+            {% endif %}
+            <span class="px-4 py-2 bg-purple-600 text-white rounded-lg">{{ announcements.page }} / {{ announcements.pages }}</span>
+            {% if announcements.has_next %}
+              <a href="?page={{ announcements.next_num }}" class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Next</a>
+            {% endif %}
+          </div>
+          {% endif %}
+        {% else %}
+          <div class="text-center py-16 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+            <div class="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i class="fas fa-bullhorn text-5xl text-gray-400"></i>
+            </div>
+            <h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">No Announcements</h3>
+            <p class="text-gray-600 dark:text-gray-400">Check back later for news and updates</p>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Inbox (Notifications) -->
+      <div>
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white"><i class="fas fa-inbox mr-2"></i>Inbox</h3>
+            <a href="{{ url_for('admin.users', status='pending') if current_user.is_authenticated and current_user.is_admin() else '#' }}" class="text-sm text-purple-600 hover:text-purple-700">View Admin</a>
+          </div>
+          {% if notifications %}
+          <ul class="divide-y divide-gray-200 dark:divide-gray-700">
+            {% for n in notifications %}
+            <li class="py-3">
+              <div class="flex items-start justify-between">
+                <div>
+                  <div class="text-sm font-medium text-gray-900 dark:text-white">{{ n.title }}</div>
+                  <div class="text-sm text-gray-600 dark:text-gray-400">{{ n.message }}</div>
+                </div>
+                {% if not n.is_read %}
+                <span class="ml-2 px-2 py-1 text-xs rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">New</span>
+                {% endif %}
+              </div>
+              {% if n.action_url %}
+              <div class="mt-2">
+                <a href="{{ n.action_url }}" class="text-xs text-purple-600 hover:text-purple-700">Open</a>
+              </div>
+              {% endif %}
+            </li>
+            {% endfor %}
+          </ul>
+          {% else %}
+          <p class="text-sm text-gray-600 dark:text-gray-400">No notifications</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+</div>
+{% endblock %}

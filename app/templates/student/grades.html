@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="animate-fade-in">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-green-600 to-teal-600 text-white py-10 mb-8 rounded-2xl">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-4xl font-bold mb-2"><i class="fas fa-chart-line mr-3"></i>My Grades</h1>
+                <p class="text-green-100">Track your academic performance and GPA</p>
+            </div>
+            <div class="text-right">
+                <div class="text-6xl font-bold mb-1">{{ "%.2f"|format(student.gpa or 0.0) }}</div>
+                <div class="text-green-100 text-lg">Cumulative GPA</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 text-center">
+            <div class="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-3">
+                <i class="fas fa-check-circle text-3xl text-green-600"></i>
+            </div>
+            <div class="text-3xl font-bold text-gray-900 dark:text-white mb-1">{{ enrollments|length }}</div>
+            <div class="text-gray-600 dark:text-gray-400">Graded Courses</div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 text-center">
+            <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-3">
+                <i class="fas fa-star text-3xl text-blue-600"></i>
+            </div>
+            <div class="text-3xl font-bold text-gray-900 dark:text-white mb-1">
+                {% set total_credits = namespace(value=0) %}
+                {% for e in enrollments %}{% set total_credits.value = total_credits.value + (e.course_section.course.credits|default(0)) %}{% endfor %}
+                {{ total_credits.value }}
+            </div>
+            <div class="text-gray-600 dark:text-gray-400">Credits Earned</div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 text-center">
+            <div class="w-16 h-16 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center mx-auto mb-3">
+                <i class="fas fa-trophy text-3xl text-purple-600"></i>
+            </div>
+            <div class="text-3xl font-bold text-gray-900 dark:text-white mb-1">{{ student.gpa|default('4.0') }}</div>
+            <div class="text-gray-600 dark:text-gray-400">GPA</div>
+        </div>
+    </div>
+
+    <!-- Grades by Term -->
+    {% if enrollments %}
+        <!-- Group enrollments by term -->
+        {% set terms = {} %}
+        {% for e in enrollments %}
+            {% set term = e.course_section.term %}
+            {% if term not in terms %}{% set _ = terms.update({term: []}) %}{% endif %}
+            {% set _ = terms[term].append(e) %}
+        {% endfor %}
+        
+        <!-- Display each term -->
+        {% for term, term_enrollments in terms.items()|sort(reverse=True) %}
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden mb-6">
+            <!-- Term Header -->
+            <div class="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900 dark:to-purple-900 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+                            <i class="fas fa-calendar-alt mr-2 text-indigo-600"></i>{{ term }}
+                        </h3>
+                    </div>
+                    <div class="text-right">
+                        {% set term_credits = term_enrollments|sum(attribute='course_section.course.credits') %}
+                        {% set term_points = namespace(value=0) %}
+                        {% set term_graded_credits = namespace(value=0) %}
+                        {% for e in term_enrollments %}
+                            {% if e.grade_points %}
+                                {% set term_points.value = term_points.value + (e.grade_points * e.course_section.course.credits) %}
+                                {% set term_graded_credits.value = term_graded_credits.value + e.course_section.course.credits %}
+                            {% endif %}
+                        {% endfor %}
+                        {% set term_gpa = (term_points.value / term_graded_credits.value) if term_graded_credits.value > 0 else 0 %}
+                        <span class="text-sm text-gray-600 dark:text-gray-400">{{ term_enrollments|length }} courses • {{ term_credits }} credits</span>
+                        <div class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">Term GPA: {{ "%.2f"|format(term_gpa) }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Term Grades Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50 dark:bg-gray-900">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Course Code</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Course Title</th>
+                            <th class="px-6 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Instructor</th>
+                            <th class="px-6 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Credits</th>
+                            <th class="px-6 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Grade</th>
+                            <th class="px-6 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Points</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        {% for e in term_enrollments %}
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            <td class="px-6 py-4">
+                                <span class="px-3 py-1 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 rounded-lg text-sm font-bold">
+                                    {{ e.course_section.course.code }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-gray-900 dark:text-white font-medium">
+                                {{ e.course_section.course.title }}
+                                <div class="text-xs text-gray-500 mt-1">Section {{ e.course_section.section_code }}</div>
+                            </td>
+                            <td class="px-6 py-4 text-center text-sm text-gray-600 dark:text-gray-400">
+                                {{ e.course_section.instructor.user.full_name if e.course_section.instructor else 'TBA' }}
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                <span class="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded font-semibold">
+                                    {{ e.course_section.course.credits }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                {% if e.grade %}
+                                    <div class="inline-flex flex-col items-center">
+                                        <span class="text-3xl font-bold 
+                                            {% if e.grade in ['A+', 'A'] %}text-green-600
+                                            {% elif e.grade == 'A-' %}text-green-500
+                                            {% elif e.grade in ['B+', 'B'] %}text-blue-600
+                                            {% elif e.grade == 'B-' %}text-blue-500
+                                            {% elif e.grade in ['C+', 'C'] %}text-yellow-600
+                                            {% elif e.grade == 'C-' %}text-yellow-500
+                                            {% elif e.grade in ['D+', 'D', 'D-'] %}text-orange-600
+                                            {% elif e.grade == 'F' %}text-red-600
+                                            {% else %}text-gray-600{% endif %}">
+                                            {{ e.grade }}
+                                        </span>
+                                    </div>
+                                {% else %}
+                                    <span class="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded text-sm font-medium">Unavailable</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 text-center text-gray-600 dark:text-gray-400 font-semibold">
+                                {{ "%.1f"|format(e.grade_points) if e.grade_points is not none else '-' }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="text-center py-16 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+            <div class="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-chart-line text-5xl text-gray-400"></i>
+            </div>
+            <h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">No Graded Courses</h3>
+            <p class="text-gray-600 dark:text-gray-400">Your grades will appear here once they are posted</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

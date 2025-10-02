@@ -1,0 +1,32 @@
+{% macro widget(target_input_id) %}
+<div class="flex items-center gap-2">
+  <select id="{{ target_input_id }}-season" class="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+    <option value="">Season</option>
+    <option>Spring</option>
+    <option>Summer</option>
+    <option>Fall</option>
+    <option>Winter</option>
+  </select>
+  <input id="{{ target_input_id }}-year" type="number" min="2000" max="2100" placeholder="Year" class="w-24 px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" />
+  <button type="button" id="{{ target_input_id }}-set" class="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded hover:bg-gray-200 dark:hover:bg-gray-600">Set</button>
+</div>
+<script>
+  (function(){
+    const seasonSel = document.getElementById('{{ target_input_id }}-season');
+    const yearInput = document.getElementById('{{ target_input_id }}-year');
+    const setBtn = document.getElementById('{{ target_input_id }}-set');
+    const targetInput = document.getElementById('{{ target_input_id }}');
+    if (yearInput && !yearInput.value) { yearInput.value = new Date().getFullYear(); }
+    if (setBtn && targetInput && seasonSel && yearInput) {
+      setBtn.addEventListener('click', () => {
+        const season = seasonSel.value.trim();
+        const year = (yearInput.value || '').trim();
+        if (season && year) {
+          targetInput.value = season + ' ' + year;
+          targetInput.dispatchEvent(new Event('input'));
+        }
+      });
+    }
+  })();
+</script>
+{% endmacro %}

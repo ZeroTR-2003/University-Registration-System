@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>{{ assignment.title }}</h1>
+<p>{{ assignment.description }}</p>
+{% if submission %}
+<p>Your submission status: {{ submission.status }}</p>
+{% else %}
+<p>No submission yet.</p>
+{% endif %}
+{% endblock %}

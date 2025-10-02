@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="animate-fade-in">
+    <div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-10 mb-8 rounded-2xl">
+        <h1 class="text-4xl font-bold mb-2"><i class="fas fa-book mr-3"></i>Manage Courses</h1>
+        <p class="text-indigo-100">Create, update, and view all courses</p>
+    </div>
+
+    <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <a href="{{ url_for('admin.create_course') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+            <i class="fas fa-plus mr-2"></i>New Course
+        </a>
+        {% if departments is defined %}
+        <form method="get" class="flex flex-wrap items-center gap-3">
+            <label class="text-sm">Search</label>
+            <input type="text" name="q" value="{{ q or '' }}" placeholder="Code, title" class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
+            <label class="text-sm">Department</label>
+            <select name="department_id" class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                <option value="">All</option>
+                {% for d in departments %}
+                    <option value="{{ d.id }}" {% if selected_department_id and selected_department_id == d.id %}selected{% endif %}>{{ d.name }}</option>
+                {% endfor %}
+            </select>
+            <label class="text-sm">Level</label>
+            <select name="level" class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
+                <option value="">All</option>
+                {% for lv, label in [('undergraduate','Undergraduate'),('graduate','Graduate'),('doctoral','Doctoral')] %}
+                <option value="{{ lv }}" {% if level == lv %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            {% if instructors is defined %}
+            <label class="text-sm">Instructor</label>
+            <select name="instructor_id" class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
+                <option value="">All</option>
+                {% for i in instructors %}
+                <option value="{{ i.id }}" {% if selected_instructor_id and selected_instructor_id == i.id %}selected{% endif %}>{{ i.user.full_name }}</option>
+                {% endfor %}
+            </select>
+            {% endif %}
+            {% set per_page_options = [12,18,30,60] %}
+            {% include 'partials/per_page_select.html' %}
+            <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Apply</button>
+            <a href="{{ url_for('admin.courses') }}" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg">Clear</a>
+        </form>
+        {% endif %}
+    </div>
+
+    {% if courses %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for c in courses %}
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 hover-lift">
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-1">{{ c.code }} - {{ c.title|default('Untitled') }}</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ c.description[:120] if c.description else 'No description' }}{% if c.description and c.description|length > 120 %}...{% endif %}</p>
+            <div class="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-4">
+                <span><i class="fas fa-star mr-1 text-yellow-500"></i>{{ c.credits|default(3) }} Credits</span>
+                <span><i class="fas fa-layer-group mr-1 text-indigo-600"></i>{{ c.level|default('Undergraduate') }}</span>
+            </div>
+            <div class="flex gap-2">
+                <a href="{{ url_for('admin.edit_course', course_id=c.id) if 'admin.edit_course' in current_app.view_functions else '#' }}" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 transition">Edit</a>
+                <a href="{{ url_for('admin.create_section', course_id=c.id) }}" class="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700 transition">Add Section</a>
+                <a href="{{ url_for('admin.sections', course_id=c.id) }}" class="px-4 py-2 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 rounded-lg text-sm hover:bg-indigo-200 dark:hover:bg-indigo-800 transition">View Sections</a>
+<a href="{{ url_for('admin.course_detail_admin', course_id=c.id) if 'admin.course_detail_admin' in current_app.view_functions else '#' }}" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition">Details</a>
+                <form method="post" id="deactivate-course-{{ c.id }}" action="{{ url_for('admin.delete_course', course_id=c.id) }}" class="inline">
+                    {{ delete_form.hidden_tag() }}
+                    <button type="button" data-form-id="deactivate-course-{{ c.id }}" data-message="Deactivate this course?" class="js-confirm px-3 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 transition">Deactivate</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-16 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+        <div class="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-book text-5xl text-gray-400"></i>
+        </div>
+        <h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">No Courses</h3>
+        <p class="text-gray-600 dark:text-gray-400">Create a new course to get started</p>
+    </div>
+    {% endif %}
+
+    {% if pagination and pagination.pages > 1 %}
+    <div class="flex justify-center space-x-2 mt-6">
+        {% if pagination.has_prev %}
+            <a href="{{ url_for('admin.courses', page=pagination.prev_num, department_id=selected_department_id or '', per_page=pagination.per_page) }}" class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        {% endif %}
+        {% for p in pagination.iter_pages() %}
+          {% if p %}
+            {% if p == pagination.page %}
+              <span class="px-3 py-2 bg-indigo-600 text-white rounded-lg">{{ p }}</span>
+            {% else %}
+              <a href="{{ url_for('admin.courses', page=p, department_id=selected_department_id or '', per_page=pagination.per_page) }}" class="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">{{ p }}</a>
+            {% endif %}
+          {% else %}
+            <span class="px-2 py-2 text-gray-500">...</span>
+          {% endif %}
+        {% endfor %}
+        {% if pagination.has_next %}
+            <a href="{{ url_for('admin.courses', page=pagination.next_num, department_id=selected_department_id or '', per_page=pagination.per_page) }}" class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

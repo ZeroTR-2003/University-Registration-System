@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="animate-fade-in">
+  <div class="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-10 mb-8 rounded-2xl">
+    <h1 class="text-3xl font-bold">{{ 'Edit Section' if 'Edit' in title else 'Create Section' }}</h1>
+    <p class="text-pink-100">Schedule, capacity, instructor and location</p>
+  </div>
+
+  <div class="max-w-4xl mx-auto">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8">
+      <form method="post" class="space-y-6">
+        {{ form.hidden_tag() }}
+
+        <div class="grid md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-semibold mb-2">{{ form.course_id.label }}</label>
+            <input type="text" id="course-filter" placeholder="Filter courses" class="mb-2 w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700" />
+            {{ form.course_id(class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700", id="course-select") }}
+          </div>
+          <div>
+            <label class="block text-sm font-semibold mb-2">{{ form.section_code.label }}</label>
+            {{ form.section_code(class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700") }}
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-semibold mb-2">{{ form.term.label }}</label>
+            <div class="flex items-center gap-2">
+              {{ form.term(class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700", list="term-options", id="term-input") }}
+              <button type="button" class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded clear-input" data-target="term-input" title="Clear">
+                <i class="fas fa-times text-gray-500"></i>
+              </button>
+            </div>
+            {% if term_options %}
+            <datalist id="term-options">
+              {% for t in term_options %}
+                <option value="{{ t }}"></option>
+              {% endfor %}
+            </datalist>
+            {% endif %}
+            {% import 'macros/term_picker.html' as term_macros with context %}
+            <div class="mt-2">{{ term_macros.widget('term-input') }}</div>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold mb-2">{{ form.capacity.label }}</label>
+            {{ form.capacity(class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700") }}
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-semibold mb-2">{{ form.instructor_id.label }}</label>
+            <input type="text" id="instructor-filter" placeholder="Filter instructors" class="mb-2 w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700" />
+            {{ form.instructor_id(class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700", id="instructor-select") }}
+          </div>
+          <div>
+            <label class="block text-sm font-semibold mb-2">{{ form.room_id.label }}</label>
+            <input type="text" id="room-filter" placeholder="Filter rooms" class="mb-2 w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700" />
+            {{ form.room_id(class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700", id="room-select") }}
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-semibold mb-2">{{ form.start_date.label }}</label>
+            {{ form.start_date(class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700") }}
+          </div>
+          <div>
+            <label class="block text-sm font-semibold mb-2">{{ form.end_date.label }}</label>
+            {{ form.end_date(class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700") }}
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-semibold mb-2">{{ form.delivery_mode.label }}</label>
+            {{ form.delivery_mode(class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700") }}
+          </div>
+          <div class="flex items-end gap-6">
+            <label class="inline-flex items-center">{{ form.allow_audit() }}<span class="ml-2">{{ form.allow_audit.label }}</span></label>
+            <label class="inline-flex items-center">{{ form.require_permission() }}<span class="ml-2">{{ form.require_permission.label }}</span></label>
+          </div>
+        </div>
+
+        <input type="hidden" name="next" value="{{ next or '' }}">
+        <div class="flex gap-4">
+          {{ form.submit(class="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700") }}
+          <a href="{{ next or url_for('admin.courses') }}" class="px-6 py-3 bg-gray-100 dark:bg-gray-700 rounded-lg">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      function attachFilter(inputId, selectId) {
+        const input = document.getElementById(inputId);
+        const select = document.getElementById(selectId);
+        if (!input || !select) return;
+        input.addEventListener('input', function() {
+          const q = this.value.trim().toLowerCase();
+          Array.from(select.options).forEach(opt => {
+            // keep placeholder like Unassigned or empty value always visible
+            if (opt.value === '' || opt.value === '0') return;
+            const show = (opt.text || '').toLowerCase().includes(q);
+            opt.hidden = !show;
+          });
+        });
+      }
+      attachFilter('course-filter', 'course-select');
+      attachFilter('instructor-filter', 'instructor-select');
+      attachFilter('room-filter', 'room-select');
+      const termInput = document.getElementById('term-input');
+      document.querySelectorAll('.clear-input').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const target = document.getElementById(btn.getAttribute('data-target'));
+          if (target){ target.value=''; target.dispatchEvent(new Event('input')); }
+        });
+      });
+    })();
+  </script>
+</div>
+{% endblock %}

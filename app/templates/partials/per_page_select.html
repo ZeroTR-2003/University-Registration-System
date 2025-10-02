@@ -1,0 +1,8 @@
+{# A small reusable partial for per-page selection. Expects `pagination` and optional `per_page_options` in context. #}
+{% set _opts = per_page_options if per_page_options is defined else [20,50,100] %}
+<label class="text-sm">Per page</label>
+<select name="per_page" class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+  {% for n in _opts %}
+    <option value="{{ n }}" {% if pagination and pagination.per_page == n %}selected{% endif %}>{{ n }}</option>
+  {% endfor %}
+</select>

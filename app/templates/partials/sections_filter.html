@@ -1,0 +1,63 @@
+{# Reusable sections filter form. Requires: courses, instructors, selected_course_id, term, status, instructor_id, delivery_mode, pagination, term_options #}
+<form method="get" class="flex flex-wrap items-center gap-3">
+  <label class="text-sm">Course</label>
+  <select name="course_id" class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+    <option value="">All</option>
+    {% for c in courses %}
+      <option value="{{ c.id }}" {% if selected_course_id and selected_course_id == c.id %}selected{% endif %}>{{ c.code }} - {{ c.title }}</option>
+    {% endfor %}
+  </select>
+
+  <label class="text-sm">Term</label>
+  <div class="flex items-center gap-2">
+    <input id="term-filter" type="text" name="term" value="{{ term or '' }}" placeholder="e.g. Spring 2025" list="term-options" class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+    <button type="button" class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded clear-input" data-target="term-filter" title="Clear">
+      <i class="fas fa-times text-gray-500"></i>
+    </button>
+  </div>
+  {% if term_options %}
+  <datalist id="term-options">
+    {% for t in term_options %}
+      <option value="{{ t }}"></option>
+    {% endfor %}
+  </datalist>
+  {% endif %}
+  {% import 'macros/term_picker.html' as term_macros with context %}
+  <div class="flex items-center gap-2">{{ term_macros.widget('term-filter') }}</div>
+
+  <label class="text-sm">Status</label>
+  <select name="status" class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+    <option value="">All</option>
+    {% for s in ['Open','Closed','Cancelled'] %}
+      <option value="{{ s }}" {% if status == s %}selected{% endif %}>{{ s }}</option>
+    {% endfor %}
+  </select>
+
+  <label class="text-sm">Instructor</label>
+  <div class="flex items-center gap-2">
+    <input type="text" id="instructor-filter" placeholder="Filter" class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+    <button type="button" class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded clear-input" data-target="instructor-filter" title="Clear">
+      <i class="fas fa-times text-gray-500"></i>
+    </button>
+  </div>
+  <select id="instructor-select" name="instructor_id" class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+    <option value="">All</option>
+    {% if instructors %}
+      {% for i in instructors %}
+        <option value="{{ i.id }}" {% if instructor_id and instructor_id == i.id %}selected{% endif %}>{{ i.user.full_name }}</option>
+      {% endfor %}
+    {% endif %}
+  </select>
+
+  <label class="text-sm">Mode</label>
+  <select name="delivery_mode" class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+    <option value="">All</option>
+    {% for m in ['In-Person','Online','Hybrid'] %}
+      <option value="{{ m }}" {% if delivery_mode == m %}selected{% endif %}>{{ m }}</option>
+    {% endfor %}
+  </select>
+
+  {% include 'partials/per_page_select.html' %}
+  <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Apply</button>
+  <a href="{{ url_for('admin.sections') }}" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg">Clear</a>
+</form>

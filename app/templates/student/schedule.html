@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="animate-fade-in">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-8 mb-8 rounded-2xl">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-4xl font-bold mb-2"><i class="fas fa-calendar-alt mr-3"></i>My Schedule</h1>
+                <p class="text-blue-100">{{ term or 'Current Term' }}</p>
+            </div>
+            <div class="flex gap-3">
+                <button class="px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg transition-all">
+                    <i class="fas fa-download mr-2"></i>Export
+                </button>
+                <button class="px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg transition-all">
+                    <i class="fas fa-print mr-2"></i>Print
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {% if enrollments %}
+        <!-- Weekly Calendar View -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden mb-8">
+            <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+                    <i class="fas fa-calendar-week mr-2 text-blue-600"></i>Weekly View
+                </h2>
+            </div>
+            
+            <!-- Time Grid -->
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50 dark:bg-gray-900">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600 dark:text-gray-400">Time</th>
+                            <th class="px-4 py-3 text-center text-sm font-semibold text-gray-600 dark:text-gray-400">Monday</th>
+                            <th class="px-4 py-3 text-center text-sm font-semibold text-gray-600 dark:text-gray-400">Tuesday</th>
+                            <th class="px-4 py-3 text-center text-sm font-semibold text-gray-600 dark:text-gray-400">Wednesday</th>
+                            <th class="px-4 py-3 text-center text-sm font-semibold text-gray-600 dark:text-gray-400">Thursday</th>
+                            <th class="px-4 py-3 text-center text-sm font-semibold text-gray-600 dark:text-gray-400">Friday</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        {% for hour in range(8, 18) %}
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                            <td class="px-4 py-4 text-sm font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                                {{ "%02d:00" % hour }}
+                            </td>
+                            {% for day in range(5) %}
+                            <td class="px-2 py-2 text-center">
+                                <div class="min-h-[60px]"></div>
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Course List View -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+                <i class="fas fa-list mr-2 text-indigo-600"></i>Enrolled Courses
+            </h2>
+            <div class="space-y-4">
+                {% for e in enrollments %}
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-700 dark:to-gray-800 p-6 rounded-xl border-l-4 border-blue-600 hover-lift">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-3">
+                                <span class="px-3 py-1 bg-blue-600 text-white rounded-full text-sm font-semibold">
+                                    {{ e.course_section.course.code }}
+                                </span>
+                                <span class="px-3 py-1 bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 rounded-full text-sm font-medium">
+                                    Section {{ e.course_section.section_code }}
+                                </span>
+                                <span class="text-yellow-500">
+                                    <i class="fas fa-star"></i> {{ e.course_section.course.credits }} Credits
+                                </span>
+                            </div>
+                            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                                {{ e.course_section.course.title }}
+                            </h3>
+                            <div class="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400">
+                                <span><i class="fas fa-chalkboard-teacher mr-1 text-blue-600"></i>Instructor TBD</span>
+                                <span><i class="fas fa-clock mr-1 text-green-600"></i>Schedule TBD</span>
+                                <span><i class="fas fa-map-marker-alt mr-1 text-red-600"></i>Room TBD</span>
+                            </div>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <button class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-all">
+                                <i class="fas fa-info-circle mr-1"></i>Details
+                            </button>
+                            <button class="px-4 py-2 bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300 rounded-lg text-sm hover:bg-red-200 dark:hover:bg-red-800 transition-all">
+                                <i class="fas fa-times mr-1"></i>Drop
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Summary Stats -->
+        <div class="grid md:grid-cols-3 gap-6 mt-8">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 text-center">
+                <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-book-open text-3xl text-blue-600"></i>
+                </div>
+                <div class="text-3xl font-bold text-gray-900 dark:text-white mb-1">{{ enrollments|length }}</div>
+                <div class="text-gray-600 dark:text-gray-400">Total Courses</div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 text-center">
+                <div class="w-16 h-16 bg-yellow-100 dark:bg-yellow-900 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-star text-3xl text-yellow-600"></i>
+                </div>
+                <div class="text-3xl font-bold text-gray-900 dark:text-white mb-1">
+                    {% set total_credits = namespace(value=0) %}
+                    {% for e in enrollments %}{% set total_credits.value = total_credits.value + e.course_section.course.credits %}{% endfor %}
+                    {{ total_credits.value }}
+                </div>
+                <div class="text-gray-600 dark:text-gray-400">Total Credits</div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 text-center">
+                <div class="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-user-graduate text-3xl text-green-600"></i>
+                </div>
+                <div class="text-3xl font-bold text-gray-900 dark:text-white mb-1">Active</div>
+                <div class="text-gray-600 dark:text-gray-400">Enrollment Status</div>
+            </div>
+        </div>
+    {% else %}
+        <!-- Empty State -->
+        <div class="text-center py-16 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+            <div class="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-calendar-times text-5xl text-gray-400"></i>
+            </div>
+            <h3 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2">No Classes Scheduled</h3>
+            <p class="text-gray-600 dark:text-gray-400 mb-6">You haven't enrolled in any courses yet</p>
+            <a href="/courses" class="inline-block px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all">
+                <i class="fas fa-search mr-2"></i>Browse Courses
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

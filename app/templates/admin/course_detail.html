@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="animate-fade-in">
+  <div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-10 mb-8 rounded-2xl">
+    <h1 class="text-3xl font-bold">{{ course.code }} - {{ course.title }}</h1>
+    <p class="text-indigo-100">Department: {{ course.department.name if course.department else 'N/A' }} • Credits: {{ course.credits }} • Level: {{ course.level or 'Undergraduate' }}</p>
+  </div>
+
+  <div class="max-w-6xl mx-auto space-y-8">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+      <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-3"><i class="fas fa-info-circle mr-2 text-indigo-600"></i>Course Details</h2>
+      <p class="text-gray-700 dark:text-gray-300">{{ course.description or 'No description provided.' }}</p>
+      {% if course.prerequisites %}
+      <div class="mt-4">
+        <span class="text-sm text-gray-600 dark:text-gray-400 mr-2">Prerequisites:</span>
+        {% for p in course.prerequisites %}
+          <span class="inline-block px-2 py-1 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 rounded mr-1 mb-1">{{ p.code }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+      <div class="mt-4 flex gap-3">
+        <a href="{{ url_for('admin.edit_course', course_id=course.id) }}" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Edit Course</a>
+        <a href="{{ url_for('admin.create_section', course_id=course.id) }}" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">Add Section</a>
+      </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white"><i class="fas fa-layer-group mr-2 text-yellow-600"></i>Sections</h2>
+        <a href="{{ url_for('admin.sections', course_id=course.id) }}" class="px-3 py-2 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-800">Manage Sections</a>
+      </div>
+
+      {% if sections %}
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50 dark:bg-gray-900">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Section</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Term</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Instructor</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Capacity</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Status</th>
+              <th class="px-6 py-3 text-right text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+            {% for s in sections %}
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+              <td class="px-6 py-4 text-gray-900 dark:text-white">{{ s.section_code }}</td>
+              <td class="px-6 py-4 text-gray-900 dark:text-white">{{ s.term }}</td>
+              <td class="px-6 py-4 text-gray-900 dark:text-white">{{ s.instructor.user.full_name if s.instructor else 'Unassigned' }}</td>
+              <td class="px-6 py-4 text-gray-900 dark:text-white">{{ s.enrolled_count }}/{{ s.capacity }}</td>
+              <td class="px-6 py-4 text-gray-900 dark:text-white">{{ s.status }}</td>
+              <td class="px-6 py-4 text-right">
+                <a href="{{ url_for('admin.edit_section', section_id=s.id) }}" class="px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 transition">Edit</a>
+                <a href="{{ url_for('admin.section_enrollments', section_id=s.id) }}" class="px-3 py-2 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700 transition">Manage Enrollments</a>
+                <form method="post" id="delete-course-section-{{ s.id }}" action="{{ url_for('admin.delete_section', section_id=s.id) }}" class="inline">
+                  {% if delete_form is defined %}{{ delete_form.hidden_tag() }}{% endif %}
+                  <button type="button" data-form-id="delete-course-section-{{ s.id }}" data-message="Delete this section?" class="js-confirm px-3 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 transition">Delete</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="text-gray-600 dark:text-gray-400">No sections for this course.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  
+</div>
+{% endblock %}
