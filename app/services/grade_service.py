@@ -66,12 +66,15 @@ class GradeService:
         old_grade = enrollment.grade
         
         try:
-            with db.session.begin():
-                # Set the grade using enrollment's method
-                enrollment.set_grade(grade, grader_id)
-                # Recalculate student's GPA
+            # Set the grade using enrollment's method
+            enrollment.set_grade(grade, grader_id)
+            # Recalculate student's GPA
+            try:
                 enrollment.student.calculate_gpa()
-        except Exception:
+            except Exception:
+                pass
+            db.session.commit()
+        except Exception as ex:
             db.session.rollback()
             messages.append('Failed to set grade due to an unexpected error. Please try again.')
             return False, messages
@@ -166,8 +169,9 @@ class GradeService:
             List of Enrollment objects
         """
         enrollments = Enrollment.query.filter_by(
-            course_section_id=section_id,
-            status='Enrolled'
+            course_section_id=section_id
+        ).filter(
+            Enrollment.status.in_(['Enrolled', 'Completed'])
         ).join(StudentProfile).order_by(
             StudentProfile.student_number
         ).all()

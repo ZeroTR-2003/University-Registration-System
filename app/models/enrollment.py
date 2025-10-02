@@ -137,7 +137,7 @@ class Enrollment(BaseModel):
     @staticmethod
     def check_credit_limit(student, course_section, max_credits=18):
         """Check if enrolling would exceed credit limit."""
-        from app.models.course import Course
+        from app.models.course import Course, CourseSection
         
         # Get current term credits
         current_credits = db.session.query(

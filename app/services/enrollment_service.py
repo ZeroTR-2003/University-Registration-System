@@ -55,30 +55,29 @@ def enroll_student(student_profile, section: CourseSection,
         pass
 
     try:
-        # Transactional enrollment
-        with db.session.begin():
-            # Create enrollment
-            enrollment = Enrollment(
-                student_id=student_profile.id, 
-                course_section_id=section.id
-            )
-            
-            if audit_mode:
-                if not section.allow_audit:
-                    messages.append("This section does not allow auditing")
-                    return None, False, messages
-                enrollment.status = 'Auditing'
-                enrollment.enrolled_at = datetime.utcnow()
-            else:
-                enrollment.enroll()
-            
-            if override_by:
-                enrollment.override_capacity = True
-                enrollment.override_prerequisites = True
-                enrollment.override_by = override_by
-                enrollment.override_at = datetime.utcnow()
-            
-            db.session.add(enrollment)
+        # Create enrollment
+        enrollment = Enrollment(
+            student_id=student_profile.id,
+            course_section_id=section.id
+        )
+        
+        if audit_mode:
+            if not section.allow_audit:
+                messages.append("This section does not allow auditing")
+                return None, False, messages
+            enrollment.status = 'Auditing'
+            enrollment.enrolled_at = datetime.utcnow()
+        else:
+            enrollment.enroll()
+        
+        if override_by:
+            enrollment.override_capacity = True
+            enrollment.override_prerequisites = True
+            enrollment.override_by = override_by
+            enrollment.override_at = datetime.utcnow()
+        
+        db.session.add(enrollment)
+        db.session.commit()
     except Exception:
         db.session.rollback()
         messages.append('Enrollment failed due to an unexpected error. Please try again.')
