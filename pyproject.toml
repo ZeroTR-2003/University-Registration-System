@@ -1,3 +1,16 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "university-registration-system"
+version = "1.0.0"
+description = "Modern University Registration System"
+requires-python = ">=3.8"
+
+[project.scripts]
+app = "app:app"
+
 [tool.black]
 line-length = 100
 exclude = "(venv|migrations|__pycache__)"

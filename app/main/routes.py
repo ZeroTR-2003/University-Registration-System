@@ -4,6 +4,7 @@ from flask import render_template, redirect, url_for, flash, request
 from flask_login import current_user, login_required
 from app.main import main_bp
 from app.models import Course, CourseSection, Department, Announcement, User
+from app.models import db
 from app.forms import SearchForm
 
 
