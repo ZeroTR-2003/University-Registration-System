@@ -17,10 +17,11 @@
     <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=">
     <link rel="icon" type="image/png" sizes="16x16" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=">
     
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind configuration (apply before loading CDN to ensure config is used) -->
     <script>
-        tailwind.config = {
+        // Use window.tailwind to avoid reference errors if `tailwind` isn't defined yet
+        window.tailwind = window.tailwind || {};
+        window.tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
@@ -46,12 +47,19 @@
                     },
                 },
             },
-        }
+        };
     </script>
+    <!-- Tailwind CSS (CDN) -->
+    <!-- Prefer a precompiled stylesheet copy (helps when the JS-based CDN is blocked). If it fails to load, fall back to the local fallback.css. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" crossorigin="anonymous" onerror="(function(){var l=document.createElement('link');l.rel='stylesheet';l.href='{{ url_for("static", filename="css/fallback.css") }}';document.head.appendChild(l);})();">
+    <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Local fallback CSS in case CDN resources are blocked -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/fallback.css') }}">
+
     <!-- Custom Styles -->
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');

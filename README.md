@@ -330,3 +330,5 @@ JWT_SECRET_KEY=your-jwt-secret
    - Ensure proper user roles are assigned
 
 For more help, check the [documentation](docs/) or open an issue.
+#   U n i v e r s i t y - R e g i s t r a t i o n - S y s t e m  
+ 
