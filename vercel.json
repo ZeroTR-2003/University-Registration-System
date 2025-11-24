@@ -1,7 +1,7 @@
 {
   "buildCommand": "pip install -r requirements.txt",
   "framework": "flask",
-  "public": "app/static",
+  "public": false,
   "rewrites": [
     {
       "source": "/(.*)",
