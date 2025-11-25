@@ -12,15 +12,28 @@ from app.forms import SearchForm
 @main_bp.route('/index')
 def index():
     """Home page."""
-    featured_courses = Course.query.filter_by(is_active=True).limit(6).all()
-    recent_announcements = Announcement.query.order_by(
-        Announcement.created_at.desc()
-    ).limit(3).all()
-    
-    return render_template('main/index.html', 
-                         title='Welcome',
-                         featured_courses=featured_courses,
-                         announcements=recent_announcements)
+    try:
+        featured_courses = Course.query.filter_by(is_active=True).limit(6).all()
+        recent_announcements = Announcement.query.order_by(
+            Announcement.created_at.desc()
+        ).limit(3).all()
+        return render_template('main/index.html', 
+                             title='Welcome',
+                             featured_courses=featured_courses,
+                             announcements=recent_announcements)
+    except Exception as e:
+        # Log full traceback so remote logs contain the root cause
+        from flask import current_app
+        current_app.logger and current_app.logger.exception('Error rendering home page')
+        # Return a minimal static landing page so the homepage is reachable
+        safe_html = (
+            '<!doctype html><html><head><meta charset="utf-8"><title>UniPortal</title>'
+            '<style>body{font-family:Arial,Helvetica,sans-serif;background:#0f1724;color:#fff;'
+            'display:flex;align-items:center;justify-content:center;height:100vh;margin:0} a{color:#8ab4ff}'
+            '</style></head><body><div><h1>UniPortal</h1><p>The site is temporarily limited — some features may be unavailable.</p>'
+            '<p><a href="/healthz">Health</a> | <a href="/status">Status</a></p></div></body></html>'
+        )
+        return safe_html, 200
 
 
 @main_bp.route('/dashboard')
