@@ -131,8 +131,9 @@ class ProductionConfig(Config):
     TESTING = False
     
     # Production database (PostgreSQL recommended)
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
-    if SQLALCHEMY_DATABASE_URI and SQLALCHEMY_DATABASE_URI.startswith('postgres://'):
+    # Prefer DATABASE_URL from env, but fall back to base Config's URI (SQLite) when not set
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or Config.SQLALCHEMY_DATABASE_URI
+    if SQLALCHEMY_DATABASE_URI and isinstance(SQLALCHEMY_DATABASE_URI, str) and SQLALCHEMY_DATABASE_URI.startswith('postgres://'):
         # Fix for SQLAlchemy compatibility
         SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI.replace('postgres://', 'postgresql://')
     
