@@ -50,11 +50,20 @@ def create_app(config_name=None):
             redis_available = True
         except Exception:
             redis_available = False
+            redis_available = False
             app.logger and app.logger.warning('Redis not available at %s - falling back to in-memory caches', app.config.get('REDIS_URL'))
     except Exception:
         # redis library not present or other import error
         redis_available = False
         app.logger and app.logger.warning('redis library not available - falling back to in-memory caches')
+
+    # Allow disabling rate-limiter entirely via env/config (useful for quick deploys)
+    disable_rl = app.config.get('DISABLE_RATELIMIT') or os.environ.get('DISABLE_RATELIMIT')
+    if isinstance(disable_rl, str):
+        disable_rl = disable_rl.lower() in ['true', '1', 'yes', 'on']
+    if disable_rl:
+        app.logger and app.logger.info('DISABLE_RATELIMIT set - forcing in-memory ratelimit storage')
+        app.config['RATELIMIT_STORAGE_URI'] = 'memory://'
     
     # Initialize extensions with app
     db.init_app(app)
@@ -76,8 +85,9 @@ def create_app(config_name=None):
         cache.init_app(app, config={'CACHE_TYPE': 'SimpleCache'})
 
     # Rate limiting
-    # Ensure limiter uses a safe storage backend when Redis is not available.
+    # Ensure limiter uses a safe storage backend when Redis is not available or disabled.
     if not redis_available and app.config.get('RATELIMIT_STORAGE_URI', '').startswith('redis'):
+        app.logger and app.logger.warning('Redis unreachable and RATELIMIT_STORAGE_URI points to Redis; switching to memory://')
         app.config['RATELIMIT_STORAGE_URI'] = 'memory://'
     limiter.init_app(app)
     

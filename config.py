@@ -73,6 +73,9 @@ class Config:
     # Flask-Limiter 3.x uses RATELIMIT_STORAGE_URI
     RATELIMIT_STORAGE_URI = REDIS_URL
     RATELIMIT_DEFAULT = "200 per hour"
+
+    # Option to disable rate limiting entirely (useful for quick deploys)
+    DISABLE_RATELIMIT = os.environ.get('DISABLE_RATELIMIT', 'false').lower() in ['true', '1', 'yes', 'on']
     
     # Logging
     LOG_TO_STDOUT = os.environ.get('LOG_TO_STDOUT', 'false').lower() in ['true', 'on', '1']
