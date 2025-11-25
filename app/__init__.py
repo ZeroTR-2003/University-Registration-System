@@ -128,6 +128,45 @@ def create_app(config_name=None):
     @app.route('/healthz', methods=['GET'])
     def healthz():
         return jsonify({'status': 'ok'}), 200
+
+    @app.route('/status', methods=['GET'])
+    def status():
+        """Return runtime status about Redis and rate-limiter storage (safe).
+
+        This endpoint is intentionally read-only and safe for debugging remote deploys.
+        """
+        redis_url = app.config.get('REDIS_URL')
+        ratelimit = app.config.get('RATELIMIT_STORAGE_URI')
+        # Mask redis url for safety
+        masked_redis = None
+        if redis_url:
+            try:
+                # show host only, hide credentials
+                from urllib.parse import urlparse
+                p = urlparse(redis_url)
+                host = p.hostname or 'localhost'
+                masked_redis = f"{p.scheme}://{host}:{p.port or ''}/{p.path.lstrip('/')}"
+            except Exception:
+                masked_redis = 'set'
+
+        # Quick ping to Redis (non-blocking; small timeout)
+        redis_available = False
+        try:
+            import redis as _redis
+            client = _redis.from_url(redis_url, socket_connect_timeout=1, socket_timeout=1)
+            try:
+                redis_available = client.ping()
+            except Exception:
+                redis_available = False
+        except Exception:
+            redis_available = False
+
+        return jsonify({
+            'status': 'ok',
+            'redis_url': masked_redis,
+            'redis_available': bool(redis_available),
+            'ratelimit_storage': ratelimit,
+        }), 200
     
     # Logging setup
     if not app.debug and not app.testing:
