@@ -46,5 +46,6 @@ RUN mkdir -p logs uploads
 # Expose port
 EXPOSE 5000
 
-# Run the application
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "--timeout", "120", "--access-logfile", "-", "--error-logfile", "-", "--log-level", "debug", "wsgi:app"]
+# Run the application using the runtime $PORT provided by the hosting platform
+# Use shell form so the $PORT environment variable is expanded at runtime.
+CMD gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --access-logfile - --error-logfile - --log-level debug wsgi:app
