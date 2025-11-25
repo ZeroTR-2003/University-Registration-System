@@ -217,10 +217,28 @@ def register_error_handlers(app):
     
     @app.errorhandler(500)
     def internal_error(error):
-        db.session.rollback()
+        # Roll back any pending DB transaction
+        try:
+            db.session.rollback()
+        except Exception:
+            # If rollback itself fails, log and continue to safe response
+            app.logger and app.logger.exception('Error rolling back DB session during 500 handler')
+
+        # Log the original exception for debugging
+        app.logger and app.logger.exception('Internal server error: %s', error)
+
+        # For API routes return JSON; for web routes return a minimal safe HTML
         if request.path.startswith('/api/'):
             return jsonify({'error': 'Internal server error'}), 500
-        return render_template('errors/500.html'), 500
+
+        # Return a minimal HTML response instead of rendering the full template
+        safe_html = (
+            '<!doctype html><html><head><meta charset="utf-8"><title>Server Error</title>'
+            '<style>body{font-family:Arial,Helvetica,sans-serif;background:#0f1724;color:#fff;display:flex;'
+            'align-items:center;justify-content:center;height:100vh;margin:0}</style></head>'
+            '<body><div><h1>500 — Server Error</h1><p>Something went wrong on our end.</p></div></body></html>'
+        )
+        return safe_html, 500
 
 
 def setup_logging(app):
