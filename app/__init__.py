@@ -38,6 +38,23 @@ def create_app(config_name=None):
     
     app = Flask(__name__)
     app.config.from_object(config[config_name])
+
+    # Check Redis availability early and fall back to in-memory stores if needed.
+    redis_available = False
+    try:
+        import redis as _redis
+        # Try a quick ping using the configured URL; timeouts kept small for startup speed
+        try:
+            client = _redis.from_url(app.config.get('REDIS_URL'), socket_connect_timeout=1, socket_timeout=1)
+            client.ping()
+            redis_available = True
+        except Exception:
+            redis_available = False
+            app.logger and app.logger.warning('Redis not available at %s - falling back to in-memory caches', app.config.get('REDIS_URL'))
+    except Exception:
+        # redis library not present or other import error
+        redis_available = False
+        app.logger and app.logger.warning('redis library not available - falling back to in-memory caches')
     
     # Initialize extensions with app
     db.init_app(app)
@@ -50,8 +67,8 @@ def create_app(config_name=None):
     # Global CSRF protection (exempt API routes below)
     csrf.init_app(app)
 
-    # Caching (Redis in prod, disable in tests, SimpleCache elsewhere)
-    if config_name == 'production':
+    # Caching (attempt Redis in prod; fall back to SimpleCache when Redis not reachable)
+    if config_name == 'production' and redis_available:
         cache.init_app(app, config={'CACHE_TYPE': 'RedisCache', 'CACHE_REDIS_URL': app.config['REDIS_URL']})
     elif app.testing:
         cache.init_app(app, config={'CACHE_TYPE': 'NullCache'})
@@ -59,6 +76,9 @@ def create_app(config_name=None):
         cache.init_app(app, config={'CACHE_TYPE': 'SimpleCache'})
 
     # Rate limiting
+    # Ensure limiter uses a safe storage backend when Redis is not available.
+    if not redis_available and app.config.get('RATELIMIT_STORAGE_URI', '').startswith('redis'):
+        app.config['RATELIMIT_STORAGE_URI'] = 'memory://'
     limiter.init_app(app)
     
     # Configure login manager
