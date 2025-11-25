@@ -113,6 +113,11 @@ def create_app(config_name=None):
     @app.route('/api/docs')
     def api_docs_redirect():
         return redirect('/apidocs')
+
+    # Minimal health check endpoint (safe: doesn't access DB or Redis)
+    @app.route('/healthz', methods=['GET'])
+    def healthz():
+        return jsonify({'status': 'ok'}), 200
     
     # Logging setup
     if not app.debug and not app.testing:
